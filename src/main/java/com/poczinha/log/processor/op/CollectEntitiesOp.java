@@ -2,13 +2,15 @@ package com.poczinha.log.processor.op;
 
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.annotation.Ignore;
-import com.poczinha.log.processor.annotation.LogEntity;
 import com.poczinha.log.processor.mapping.EntityMapping;
-import jakarta.persistence.*;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.util.*;
 
 public class CollectEntitiesOp {
@@ -34,7 +36,7 @@ public class CollectEntitiesOp {
         boolean manyToOne = field.getAnnotation(ManyToOne.class) != null;
         boolean oneToMany = field.getAnnotation(OneToMany.class) != null;
         boolean oneToOne = field.getAnnotation(OneToOne.class) != null;
-        boolean ManyToMany = field.getAnnotation(jakarta.persistence.ManyToMany.class) != null;
+        boolean ManyToMany = field.getAnnotation(javax.persistence.ManyToMany.class) != null;
 
         return ignored || manyToOne || oneToMany || oneToOne || ManyToMany;
     }

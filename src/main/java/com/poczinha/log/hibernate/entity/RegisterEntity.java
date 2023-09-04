@@ -2,8 +2,7 @@ package com.poczinha.log.hibernate.entity;
 
 import com.poczinha.log.hibernate.domain.TypeEnum;
 
-import jakarta.persistence.*;
-
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

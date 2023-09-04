@@ -6,13 +6,13 @@ import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
 import com.squareup.javapoet.*;
-import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.persistence.EntityManager;
 
 import java.time.LocalDateTime;
 
