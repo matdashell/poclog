@@ -1,5 +1,6 @@
 package com.poczinha.log.processor.op;
 
+import com.poczinha.log.hibernate.domain.Correlation;
 import com.poczinha.log.hibernate.service.RegisterService;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
@@ -92,14 +93,13 @@ public class CreateEntitiesLogServicesOp {
                     TypeName.get(entityElement.asType()),
                     TypeName.get(entityElement.asType()));
 
-            method.addStatement("$T now = LocalDateTime.now()", TypeName.get(LocalDateTime.class));
             method.addStatement("String tn = $S + \"[\" + entityId + \"]\"", getSimpleName(entityElement.getSimpleName()));
             method.addCode("\n");
 
             for (Element field : entity.getFields()) {
                 String fieldGettter = getGetter(field.getSimpleName().toString());
 
-                String expression = format("registerService.registerDelete(tn, $S, identifier, valueOf(dbEntity.%s()), now)", fieldGettter);
+                String expression = format("registerService.registerDelete(tn, $S, identifier, valueOf(dbEntity.%s()))", fieldGettter);
                 method.addStatement(expression, getSimpleName(field.getSimpleName()));
             }
 
@@ -118,7 +118,6 @@ public class CreateEntitiesLogServicesOp {
 
             String idGetter = getGetter(entity.getId());
 
-            method.addStatement("$T now = LocalDateTime.now()", TypeName.get(LocalDateTime.class));
             method.addStatement("String tn = $S", getSimpleName(entityElement.getSimpleName()));
             method.addCode("\n");
 
@@ -145,7 +144,7 @@ public class CreateEntitiesLogServicesOp {
 
                 method.beginControlFlow(filter);
 
-                String expression = format("registerService.registerUpdate(tn, $S, identifier, valueOf(dbEntity.%s()), valueOf(currentEntity.%s()), now)", fieldGettter, fieldGettter);
+                String expression = format("registerService.registerUpdate(tn, $S, identifier, valueOf(dbEntity.%s()), valueOf(currentEntity.%s()))", fieldGettter, fieldGettter);
                 method.addStatement(expression, getSimpleName(field.getSimpleName()));
                 method.endControlFlow();
             }
@@ -157,7 +156,7 @@ public class CreateEntitiesLogServicesOp {
             for (Element field : entity.getFields()) {
                 String fieldGettter = getGetter(field.getSimpleName().toString());
 
-                String expression = format("registerService.registerCreate(tn, $S, identifier, valueOf(currentEntity.%s()), now)", fieldGettter);
+                String expression = format("registerService.registerCreate(tn, $S, identifier, valueOf(currentEntity.%s()))", fieldGettter);
                 method.addStatement(expression, getSimpleName(field.getSimpleName()));
             }
 

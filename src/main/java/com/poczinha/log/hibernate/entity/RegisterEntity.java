@@ -22,8 +22,9 @@ public class RegisterEntity {
     private LocalDateTime date;
     private String lastValue;
     private String newValue;
+    private String correlation;
 
-    public RegisterEntity(String entity, String field, String identifier, TypeEnum type, String lastValue, String newValue, LocalDateTime now) {
+    public RegisterEntity(String entity, String field, String identifier, TypeEnum type, String lastValue, String newValue, LocalDateTime now, String correlation) {
         this.entity = entity;
         this.field = field;
         this.identifier = identifier;
@@ -31,6 +32,7 @@ public class RegisterEntity {
         this.lastValue = lastValue;
         this.newValue = newValue;
         this.date = now;
+        this.correlation = correlation;
     }
 
     public Integer getId() {
@@ -95,5 +97,13 @@ public class RegisterEntity {
 
     public void setNewValue(String newValue) {
         this.newValue = newValue;
+    }
+
+    public String getCorrelation() {
+        return correlation;
+    }
+
+    public void setCorrelation(String correlation) {
+        this.correlation = correlation;
     }
 }

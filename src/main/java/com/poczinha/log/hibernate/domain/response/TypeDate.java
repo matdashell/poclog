@@ -7,11 +7,13 @@ import java.time.LocalDateTime;
 public class TypeDate {
     private final TypeEnum type;
     private final String entity;
+    private final String correlation;
     private final LocalDateTime date;
 
-    public TypeDate(TypeEnum type, String entity, LocalDateTime date) {
+    public TypeDate(TypeEnum type, String entity, String correlation, LocalDateTime date) {
         this.type = type;
         this.entity = entity;
+        this.correlation = correlation;
         this.date = date;
     }
 
@@ -21,6 +23,10 @@ public class TypeDate {
 
     public String getEntity() {
         return entity;
+    }
+
+    public String getCorrelation() {
+        return correlation;
     }
 
     public LocalDateTime getDate() {

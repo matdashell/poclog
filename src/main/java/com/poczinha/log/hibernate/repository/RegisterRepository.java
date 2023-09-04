@@ -16,16 +16,22 @@ import java.util.List;
 @Repository
 public interface RegisterRepository extends JpaRepository<RegisterEntity, Integer> {
 
-    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.IdentifierDate(r.identifier, r.entity, r.date) FROM RegisterEntity r WHERE r.date BETWEEN :start AND :end")
+    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.IdentifierDate(r.identifier, r.entity, r.correlation, r.date) FROM RegisterEntity r WHERE r.date BETWEEN :start AND :end")
     List<IdentifierDate> findAllByDateBetween(
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
 
-    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.TypeDate(r.type, r.entity, r.date) FROM RegisterEntity r WHERE r.identifier = :identifier AND r.date BETWEEN :start AND :end")
-    List<TypeDate> findAllDistinctsByIdentifierAndDateBetween(
+    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.TypeDate(r.type, r.entity, r.correlation, r.date) FROM RegisterEntity r WHERE r.identifier = :identifier AND r.date BETWEEN :start AND :end")
+    List<TypeDate> findAllDistinctsByCorrelation(
             @Param("identifier") String identifier,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
 
     List<ModificationEntity> findAllByTypeAndDateAndIdentifier(TypeEnum type, LocalDateTime date, String identifier);
+
+    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.TypeDate(r.type, r.entity, r.correlation, r.date) FROM RegisterEntity r WHERE r.correlation = :correlation")
+    List<TypeDate> findAllDistinctsByCorrelation(
+            @Param("correlation") String correlation);
+
+    List<ModificationEntity> findAllByTypeAndEntityAndCorrelation(TypeEnum type, String entity, String correlation);
 }

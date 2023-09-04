@@ -46,7 +46,7 @@ public class Processor extends AbstractProcessor {
             Context.createEntitiesLogServicesOp.execute();
             Context.configureOp.execute();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
 
         return true;

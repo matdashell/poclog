@@ -9,6 +9,7 @@ import java.util.List;
 public class ModificationIdentifier {
     private final TypeEnum type;
     private final String entity;
+    private final String correlation;
     private final LocalDateTime date;
     private List<ModificationEntity> modifications = new ArrayList<>();
 
@@ -24,6 +25,10 @@ public class ModificationIdentifier {
         return modifications;
     }
 
+    public String getCorrelation() {
+        return correlation;
+    }
+
     public String getEntity() {
         return entity;
     }
@@ -32,9 +37,10 @@ public class ModificationIdentifier {
         this.modifications = modifications;
     }
 
-    public ModificationIdentifier(TypeEnum type, String entity, LocalDateTime date) {
+    public ModificationIdentifier(TypeEnum type, String entity, String correlation, LocalDateTime date) {
         this.type = type;
         this.entity = entity;
+        this.correlation = correlation;
         this.date = date;
     }
 }

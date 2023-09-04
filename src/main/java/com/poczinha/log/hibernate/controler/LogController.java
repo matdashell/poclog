@@ -35,4 +35,13 @@ public class LogController {
 
         return registerService.getAllModificationsByIdentifierBetween(identifier, start, end);
     }
+
+    @GetMapping("/modifications/correlation/{correlation}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ModificationIdentifier> getAllModificationsByCorrelation(
+            @PathVariable String correlation) {
+
+        return registerService.getAllModificationsByCorrelation(correlation);
+    }
+
 }
