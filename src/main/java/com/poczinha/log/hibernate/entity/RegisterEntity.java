@@ -1,45 +1,36 @@
 package com.poczinha.log.hibernate.entity;
 
-import com.poczinha.log.hibernate.entity.base.BaseEntity;
+import com.poczinha.log.hibernate.domain.TypeEnum;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-public class RegisterEntity extends BaseEntity {
+@Table(name = "registerEntity")
+public class RegisterEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String type;
-
+    @Enumerated(EnumType.STRING)
+    private TypeEnum type;
+    private String entity;
+    private String field;
+    private String identifier;
+    private LocalDateTime date;
     private String lastValue;
-
     private String newValue;
 
-    @ManyToOne(targetEntity = TableEntity.class, fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "table_id", referencedColumnName = "id")
-    private TableEntity table;
-
-    @ManyToOne(targetEntity = ColumnEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "column_id", referencedColumnName = "id")
-    private ColumnEntity column;
-
-    @ManyToOne(targetEntity = IdentifierEntity.class, fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "identifier_id", referencedColumnName = "id")
-    private IdentifierEntity identifier;
-
-    public RegisterEntity(String type, TableEntity table, ColumnEntity column, IdentifierEntity identifier, String lastValue, String newValue) {
-        this.type = type;
-        this.table = table;
-        this.column = column;
+    public RegisterEntity(String entity, String field, String identifier, TypeEnum type, String lastValue, String newValue, LocalDateTime now) {
+        this.entity = entity;
+        this.field = field;
         this.identifier = identifier;
+        this.type = type;
         this.lastValue = lastValue;
         this.newValue = newValue;
-        super.register();
-    }
-
-    public RegisterEntity() {
+        this.date = now;
     }
 
     public Integer getId() {
@@ -50,36 +41,44 @@ public class RegisterEntity extends BaseEntity {
         this.id = id;
     }
 
-    public String getType() {
+    public TypeEnum getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(TypeEnum type) {
         this.type = type;
     }
 
-    public TableEntity getTable() {
-        return table;
+    public String getEntity() {
+        return entity;
     }
 
-    public void setTable(TableEntity table) {
-        this.table = table;
+    public void setEntity(String entity) {
+        this.entity = entity;
     }
 
-    public ColumnEntity getColumn() {
-        return column;
-    }
-
-    public void setColumn(ColumnEntity column) {
-        this.column = column;
-    }
-
-    public IdentifierEntity getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
-    public void setIdentifier(IdentifierEntity identifier) {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 
     public String getLastValue() {

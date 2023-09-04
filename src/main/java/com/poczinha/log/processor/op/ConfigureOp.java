@@ -1,12 +1,8 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.hibernate.controler.LoggerController;
+import com.poczinha.log.hibernate.controler.LogController;
 import com.poczinha.log.hibernate.domain.Constants;
-import com.poczinha.log.hibernate.mapper.RegisterMapper;
-import com.poczinha.log.hibernate.service.ColumnService;
-import com.poczinha.log.hibernate.service.IdentifierService;
 import com.poczinha.log.hibernate.service.RegisterService;
-import com.poczinha.log.hibernate.service.TableService;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.squareup.javapoet.AnnotationSpec;
@@ -24,11 +20,11 @@ public class ConfigureOp {
     public void execute() {
 
         AnnotationSpec entityScan = AnnotationSpec.builder(EntityScan.class)
-                .addMember("basePackages", "{$S, $S}", Context.entitiesBasePackage, Constants.ENTITY_SCAN)
+                .addMember("basePackages", "{$S, $S}", Context.entitiesBasePackage, Constants.LOG_ENTITY_SCAN)
                 .build();
 
         AnnotationSpec repositoryScan = AnnotationSpec.builder(EnableJpaRepositories.class)
-                .addMember("basePackages", "{$S, $S}", Context.repositoriesBasePackage, Constants.REPOSITORY_SCAN)
+                .addMember("basePackages", "{$S, $S}", Context.repositoriesBasePackage, Constants.LOG_REPOSITORY_SCAN)
                 .build();
 
         TypeSpec.Builder builder = TypeSpec.classBuilder("LogConfiguration")
@@ -43,41 +39,13 @@ public class ConfigureOp {
                 .returns(RegisterService.class)
                 .addStatement("return new RegisterService()");
 
-        MethodSpec.Builder tableService = MethodSpec.methodBuilder("tableService")
+        MethodSpec.Builder loggerController = MethodSpec.methodBuilder("LogController")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Bean.class)
-                .returns(TableService.class)
-                .addStatement("return new TableService()");
-
-        MethodSpec.Builder identifierService = MethodSpec.methodBuilder("identifierService")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Bean.class)
-                .returns(IdentifierService.class)
-                .addStatement("return new IdentifierService()");
-
-        MethodSpec.Builder columnService = MethodSpec.methodBuilder("columnService")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Bean.class)
-                .returns(ColumnService.class)
-                .addStatement("return new ColumnService()");
-
-        MethodSpec.Builder registerMapper = MethodSpec.methodBuilder("registerMapper")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Bean.class)
-                .returns(RegisterMapper.class)
-                .addStatement("return new RegisterMapper()");
-
-        MethodSpec.Builder loggerController = MethodSpec.methodBuilder("loggerController")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Bean.class)
-                .returns(LoggerController.class)
-                .addStatement("return new LoggerController()");
+                .returns(LogController.class)
+                .addStatement("return new LogController()");
 
         builder.addMethod(registerService.build());
-        builder.addMethod(tableService.build());
-        builder.addMethod(identifierService.build());
-        builder.addMethod(columnService.build());
-        builder.addMethod(registerMapper.build());
         builder.addMethod(loggerController.build());
 
         Processor.write(builder.build());

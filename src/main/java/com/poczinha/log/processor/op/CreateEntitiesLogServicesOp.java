@@ -13,6 +13,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 
+import java.time.LocalDateTime;
+
 import static java.lang.String.format;
 
 public class CreateEntitiesLogServicesOp {
@@ -44,36 +46,91 @@ public class CreateEntitiesLogServicesOp {
                 .endControlFlow()
                 .addStatement("return null");
 
-        MethodSpec.Builder equals = MethodSpec.methodBuilder("equals")
+        MethodSpec.Builder notEquals = MethodSpec.methodBuilder("notEquals")
                 .addModifiers(Modifier.PRIVATE)
                 .returns(boolean.class)
                 .addParameter(Object.class, "value1")
                 .addParameter(Object.class, "value2")
                 .beginControlFlow("if (value1 != null && value2 != null)")
-                .addStatement("return value1.equals(value2)")
+                .addStatement("return !value1.equals(value2)")
                 .endControlFlow()
-                .addStatement("return value1 == value2");
+                .addStatement("return value1 != value2");
 
         builder.addMethod(valueOf.build());
-        builder.addMethod(equals.build());
+        builder.addMethod(notEquals.build());
 
+        System.out.println("writing createAndUpdateProcessor");
+        createAndUpdateProcessor(builder);
+
+        System.out.println("writing deleteProcessor");
+        deleteProcessor(builder);
+
+        System.out.println("writing LogService");
+        Processor.write(builder.build());
+    }
+
+    private String getGetter(String name) {
+        return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    private String getSimpleName(Name item) {
+        String name = item.toString();
+        return name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    private void deleteProcessor(TypeSpec.Builder builder) {
+        for (EntityMapping entity : Context.mappings) {
+            Element entityElement = entity.getEntity();
+
+            MethodSpec.Builder method = MethodSpec.methodBuilder("logDelete" + entityElement.getSimpleName())
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(TypeName.get(entity.getIdType()), "entityId")
+                    .addParameter(String.class, "identifier");
+
+            method.addStatement(
+                    "$T dbEntity = em.find($T.class, entityId)",
+                    TypeName.get(entityElement.asType()),
+                    TypeName.get(entityElement.asType()));
+
+            method.addStatement("$T now = LocalDateTime.now()", TypeName.get(LocalDateTime.class));
+            method.addStatement("String tn = $S + \"[\" + entityId + \"]\"", getSimpleName(entityElement.getSimpleName()));
+            method.addCode("\n");
+
+            for (Element field : entity.getFields()) {
+                String fieldGettter = getGetter(field.getSimpleName().toString());
+
+                String expression = format("registerService.registerDelete(tn, $S, identifier, valueOf(dbEntity.%s()), now)", fieldGettter);
+                method.addStatement(expression, getSimpleName(field.getSimpleName()));
+            }
+
+            method.addStatement("em.close()");
+            builder.addMethod(method.build());
+        }
+    }
+
+    private void createAndUpdateProcessor(TypeSpec.Builder builder) {
         for (EntityMapping entity : Context.mappings) {
             Element entityElement = entity.getEntity();
             MethodSpec.Builder method = MethodSpec.methodBuilder("log" + entityElement.getSimpleName())
                     .addModifiers(Modifier.PUBLIC)
-                    .addParameter(TypeName.get(entityElement.asType()), "curentEntity")
-                    .addParameter(String.class, "identifier")
-                    .addParameter(String.class, "operation");
+                    .addParameter(TypeName.get(entityElement.asType()), "currentEntity")
+                    .addParameter(String.class, "identifier");
 
             String idGetter = getGetter(entity.getId());
 
+            method.addStatement("$T now = LocalDateTime.now()", TypeName.get(LocalDateTime.class));
             method.addStatement("String tn = $S", getSimpleName(entityElement.getSimpleName()));
-            method.beginControlFlow(format("if (curentEntity.%s() != null)", idGetter));
+            method.addCode("\n");
+
+            method.beginControlFlow(format("if (currentEntity.%s() != null)", idGetter));
             method.addStatement(
-                    "$T dbEntity = em.find($T.class, curentEntity.$L())",
+                    "$T dbEntity = em.find($T.class, currentEntity.$L())",
                     TypeName.get(entityElement.asType()),
                     TypeName.get(entityElement.asType()),
                     idGetter);
+
+            method.addStatement(format("tn = tn + \"[\" + dbEntity.%s() + \"]\"", idGetter));
+            method.addCode("\n");
 
             for (Element field : entity.getFields()) {
                 String fieldGettter = getGetter(field.getSimpleName().toString());
@@ -81,14 +138,14 @@ public class CreateEntitiesLogServicesOp {
                 String filter;
 
                 if (field.asType().getKind().isPrimitive()) {
-                    filter = format("if (curentEntity.%s() != dbEntity.%s())", fieldGettter, fieldGettter);
+                    filter = format("if (currentEntity.%s() != dbEntity.%s())", fieldGettter, fieldGettter);
                 } else {
-                    filter = format("if (equals(dbEntity.%s(), curentEntity.%s()))", fieldGettter, fieldGettter);
+                    filter = format("if (notEquals(dbEntity.%s(), currentEntity.%s()))", fieldGettter, fieldGettter);
                 }
 
                 method.beginControlFlow(filter);
 
-                String expression = format("registerService.register(tn, $S, identifier, operation, valueOf(dbEntity.%s()), valueOf(curentEntity.%s()))", fieldGettter, fieldGettter);
+                String expression = format("registerService.registerUpdate(tn, $S, identifier, valueOf(dbEntity.%s()), valueOf(currentEntity.%s()), now)", fieldGettter, fieldGettter);
                 method.addStatement(expression, getSimpleName(field.getSimpleName()));
                 method.endControlFlow();
             }
@@ -100,7 +157,7 @@ public class CreateEntitiesLogServicesOp {
             for (Element field : entity.getFields()) {
                 String fieldGettter = getGetter(field.getSimpleName().toString());
 
-                String expression = format("registerService.register(tn, $S, identifier, operation, null, valueOf(curentEntity.%s()))", fieldGettter);
+                String expression = format("registerService.registerCreate(tn, $S, identifier, valueOf(currentEntity.%s()), now)", fieldGettter);
                 method.addStatement(expression, getSimpleName(field.getSimpleName()));
             }
 
@@ -108,16 +165,5 @@ public class CreateEntitiesLogServicesOp {
 
             builder.addMethod(method.build());
         }
-
-        Processor.write(builder.build());
-    }
-
-    private String getGetter(String name) {
-        return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
-    }
-
-    private String getSimpleName(Name item) {
-        String name = item.toString();
-        return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 }

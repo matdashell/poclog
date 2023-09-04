@@ -1,7 +1,10 @@
 package com.poczinha.log.hibernate.repository;
 
+import com.poczinha.log.hibernate.domain.TypeEnum;
+import com.poczinha.log.hibernate.domain.response.IdentifierDate;
+import com.poczinha.log.hibernate.domain.response.ModificationEntity;
+import com.poczinha.log.hibernate.domain.response.TypeDate;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
-import com.poczinha.log.hibernate.entity.TableEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,23 +16,16 @@ import java.util.List;
 @Repository
 public interface RegisterRepository extends JpaRepository<RegisterEntity, Integer> {
 
-    @Query("SELECT DISTINCT r.identifier.name FROM RegisterEntity r WHERE r.createdAt BETWEEN :start AND :end")
-    List<String> getAllIdentifierNamesByCreatedAtBetween(
-            @Param("start") LocalDateTime startDate,
-            @Param("end") LocalDateTime endDate
-    );
+    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.IdentifierDate(r.identifier, r.entity, r.date) FROM RegisterEntity r WHERE r.date BETWEEN :start AND :end")
+    List<IdentifierDate> findAllByDateBetween(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
 
-    @Query("SELECT DISTINCT r.table FROM RegisterEntity r WHERE r.identifier.name = :identifierName AND r.createdAt BETWEEN :start AND :end")
-    List<TableEntity> findAllTableByIdentifierNameAndCreatedAtBetween(
-            @Param("identifierName") String identifierName,
-            @Param("start") LocalDateTime startDate,
-            @Param("end") LocalDateTime endDate
-    );
+    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.TypeDate(r.type, r.entity, r.date) FROM RegisterEntity r WHERE r.identifier = :identifier AND r.date BETWEEN :start AND :end")
+    List<TypeDate> findAllDistinctsByIdentifierAndDateBetween(
+            @Param("identifier") String identifier,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
 
-    List<RegisterEntity> findAllByTableAndIdentifierNameAndCreatedAtBetweenOrderByCreatedAt(
-            TableEntity table,
-            String identifierName,
-            LocalDateTime startDate,
-            LocalDateTime endDate
-    );
+    List<ModificationEntity> findAllByTypeAndDateAndIdentifier(TypeEnum type, LocalDateTime date, String identifier);
 }

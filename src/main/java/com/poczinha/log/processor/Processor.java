@@ -13,7 +13,7 @@ import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.util.Set;
 
-@SupportedAnnotationTypes({"com.poczinha.log.processor.annotation.*",})
+@SupportedAnnotationTypes({"com.poczinha.log.processor.annotation.*"})
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 @AutoService(javax.annotation.processing.Processor.class)
 public class Processor extends AbstractProcessor {
@@ -26,7 +26,12 @@ public class Processor extends AbstractProcessor {
 
         if (elementsAnnotatedWith.isEmpty()) return true;
 
-        Element main = (Element) roundEnv.getElementsAnnotatedWith(EnableLog.class).toArray()[0];
+        Set<? extends Element> enableLogResult = roundEnv.getElementsAnnotatedWith(EnableLog.class);
+
+        System.out.println("WARNING: EnableLog annotation not found");
+        if (enableLogResult.isEmpty()) return true;
+
+        Element main = (Element) enableLogResult.toArray()[0];
         Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();
 
         EnableLog annotation = main.getAnnotation(EnableLog.class);
