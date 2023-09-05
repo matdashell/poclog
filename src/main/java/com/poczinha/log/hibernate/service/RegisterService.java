@@ -2,10 +2,10 @@ package com.poczinha.log.hibernate.service;
 
 import com.poczinha.log.hibernate.domain.Correlation;
 import com.poczinha.log.hibernate.domain.TypeEnum;
-import com.poczinha.log.hibernate.domain.response.IdentifierDate;
-import com.poczinha.log.hibernate.domain.response.ModificationEntity;
-import com.poczinha.log.hibernate.domain.response.ModificationIdentifier;
-import com.poczinha.log.hibernate.domain.response.TypeDate;
+import com.poczinha.log.hibernate.domain.response.CorrelationModification;
+import com.poczinha.log.hibernate.domain.response.PeriodModification;
+import com.poczinha.log.hibernate.domain.response.data.EntityModification;
+import com.poczinha.log.hibernate.domain.response.data.FieldModification;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.poczinha.log.hibernate.repository.RegisterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,55 +41,27 @@ public class RegisterService {
         registerRepository.save(registerEntity);
     }
 
-    public List<IdentifierDate> getAllIdentifiersModifiedIn(LocalDateTime start, LocalDateTime end) {
-        return registerRepository.findAllByDateBetween(start, end);
+    public List<PeriodModification> getAllPeriodModificationBetween(LocalDateTime start, LocalDateTime end) {
+        return registerRepository.getAllPeriodModificationBetween(start, end);
     }
 
-    public List<ModificationIdentifier> getAllModificationsByIdentifierBetween(String identifier, LocalDateTime start, LocalDateTime end) {
-        List<TypeDate> typeDates = registerRepository.findAllDistinctsByCorrelation(identifier, start, end);
-        List<ModificationIdentifier> responses = new ArrayList<>();
+    public CorrelationModification getAllModificationsByCorrelation(String correlation) {
+        String identifier = registerRepository.getIdentifierByCorrelation(correlation);
 
-        for (TypeDate typeDate : typeDates) {
-            ModificationIdentifier modificationIdentifier = new ModificationIdentifier(
-                    typeDate.getType(),
-                    typeDate.getEntity(),
-                    typeDate.getCorrelation(),
-                    typeDate.getDate());
+        CorrelationModification response = new CorrelationModification(correlation, identifier);
 
-            List<ModificationEntity> modificationEntities = registerRepository.findAllByTypeAndDateAndIdentifier(
-                    typeDate.getType(),
-                    typeDate.getDate(),
-                    identifier);
+        List<EntityModification> entities = registerRepository.getAllModificationsByCorrelation(correlation);
 
-            modificationIdentifier.setModifications(modificationEntities);
+        for (EntityModification entity : entities) {
+            List<FieldModification> fields = registerRepository.getAllModificationsByCorrelationAndEntityAndType(
+                    correlation,
+                    entity.getEntity(),
+                    entity.getType());
 
-            responses.add(modificationIdentifier);
+            entity.getModifications().addAll(fields);
         }
 
-        return responses;
-    }
-
-    public List<ModificationIdentifier> getAllModificationsByCorrelation(String correlation) {
-        List<TypeDate> typeDates = registerRepository.findAllDistinctsByCorrelation(correlation);
-        List<ModificationIdentifier> responses = new ArrayList<>();
-
-        for (TypeDate typeDate : typeDates) {
-            ModificationIdentifier modificationIdentifier = new ModificationIdentifier(
-                    typeDate.getType(),
-                    typeDate.getEntity(),
-                    typeDate.getCorrelation(),
-                    typeDate.getDate());
-
-            List<ModificationEntity> modificationEntities = registerRepository.findAllByTypeAndEntityAndCorrelation(
-                    typeDate.getType(),
-                    typeDate.getEntity(),
-                    typeDate.getCorrelation());
-
-            modificationIdentifier.setModifications(modificationEntities);
-
-            responses.add(modificationIdentifier);
-        }
-
-        return responses;
+        response.getEntities().addAll(entities);
+        return response;
     }
 }
