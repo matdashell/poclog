@@ -1,6 +1,5 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.hibernate.domain.Correlation;
 import com.poczinha.log.hibernate.service.RegisterService;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
@@ -8,13 +7,14 @@ import com.poczinha.log.processor.mapping.EntityMapping;
 import com.squareup.javapoet.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.persistence.EntityManager;
-
-import java.time.LocalDateTime;
 
 import static java.lang.String.format;
 
@@ -103,7 +103,6 @@ public class CreateEntitiesLogServicesOp {
                 method.addStatement(expression, getSimpleName(field.getSimpleName()));
             }
 
-            method.addStatement("em.close()");
             builder.addMethod(method.build());
         }
     }
@@ -111,8 +110,15 @@ public class CreateEntitiesLogServicesOp {
     private void createAndUpdateProcessor(TypeSpec.Builder builder) {
         for (EntityMapping entity : Context.mappings) {
             Element entityElement = entity.getEntity();
+
+            AnnotationSpec transactional = AnnotationSpec.builder(Transactional.class)
+                    .addMember("propagation", "$T.$L", Propagation.class, "REQUIRES_NEW")
+                    .addMember("isolation", "$T.$L", Isolation.class, "READ_COMMITTED")
+                    .build();
+
             MethodSpec.Builder method = MethodSpec.methodBuilder("log" + entityElement.getSimpleName())
                     .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(transactional)
                     .addParameter(TypeName.get(entityElement.asType()), "currentEntity")
                     .addParameter(String.class, "identifier");
 
@@ -148,8 +154,6 @@ public class CreateEntitiesLogServicesOp {
                 method.addStatement(expression, getSimpleName(field.getSimpleName()));
                 method.endControlFlow();
             }
-
-            method.addStatement("em.close()");
 
             method.nextControlFlow("else");
 

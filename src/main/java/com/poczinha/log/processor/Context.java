@@ -21,6 +21,4 @@ public class Context {
     public static String packageName;
 
     public static Filer filer;
-    public static String repositoriesBasePackage;
-    public static String entitiesBasePackage;
 }

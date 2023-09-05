@@ -34,10 +34,6 @@ public class Processor extends AbstractProcessor {
         Element main = (Element) enableLogResult.toArray()[0];
         Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();
 
-        EnableLog annotation = main.getAnnotation(EnableLog.class);
-        Context.entitiesBasePackage = annotation.baseEntityPagackage();
-        Context.repositoriesBasePackage = annotation.baseRepositoryPackage();
-
         Context.filer = processingEnv.getFiler();
         Context.entities = elementsAnnotatedWith;
 
