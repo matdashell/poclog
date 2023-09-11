@@ -1,5 +1,8 @@
 package com.poczinha.log.hibernate.domain.response.data;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({"field", "lastValue", "newValue"})
 public class FieldModification {
     private final String field;
     private final String lastValue;

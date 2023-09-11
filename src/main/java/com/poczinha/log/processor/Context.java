@@ -2,7 +2,6 @@ package com.poczinha.log.processor;
 
 import com.poczinha.log.processor.mapping.EntityMapping;
 import com.poczinha.log.processor.op.CollectEntitiesOp;
-import com.poczinha.log.processor.op.ConfigureOp;
 import com.poczinha.log.processor.op.CreateEntitiesLogServicesOp;
 
 import javax.annotation.processing.Filer;
@@ -12,7 +11,6 @@ import java.util.Set;
 
 public class Context {
 
-    public static ConfigureOp configureOp = new ConfigureOp();
     public static CollectEntitiesOp collectEntitiesOp = new CollectEntitiesOp();
     public static CreateEntitiesLogServicesOp createEntitiesLogServicesOp = new CreateEntitiesLogServicesOp();
 

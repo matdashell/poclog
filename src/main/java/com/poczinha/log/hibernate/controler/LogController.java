@@ -29,7 +29,7 @@ public class LogController {
     @GetMapping("/modifications/correlation/{correlation}")
     @ResponseStatus(HttpStatus.OK)
     public CorrelationModification getAllModificationsByCorrelation(
-            @PathVariable String correlation) {
+            @PathVariable Long correlation) {
 
         return registerService.getAllModificationsByCorrelation(correlation);
     }

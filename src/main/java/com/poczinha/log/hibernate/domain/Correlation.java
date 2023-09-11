@@ -1,17 +1,18 @@
 package com.poczinha.log.hibernate.domain;
 
+import com.poczinha.log.hibernate.entity.CorrelationEntity;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class Correlation {
-    private final String id = UUID.randomUUID().toString();
-    private final LocalDateTime date = LocalDateTime.now();
+    private final CorrelationEntity correlationEntity;
 
-    public String getId() {
-        return id;
+    public Correlation() {
+        this.correlationEntity = new CorrelationEntity();
     }
 
-    public LocalDateTime getDate() {
-        return date;
+    public CorrelationEntity getCorrelationEntity() {
+        return correlationEntity;
     }
 }

@@ -13,6 +13,8 @@ import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.util.Set;
 
+import static com.poczinha.log.processor.util.Util.log;
+
 @SupportedAnnotationTypes({"com.poczinha.log.processor.annotation.*"})
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 @AutoService(javax.annotation.processing.Processor.class)
@@ -20,7 +22,6 @@ public class Processor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        System.out.println("Processor called");
 
         Set<? extends Element> elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(LogEntity.class);
 
@@ -28,8 +29,10 @@ public class Processor extends AbstractProcessor {
 
         Set<? extends Element> enableLogResult = roundEnv.getElementsAnnotatedWith(EnableLog.class);
 
-        System.out.println("WARNING: EnableLog annotation not found");
-        if (enableLogResult.isEmpty()) return true;
+        if (enableLogResult.isEmpty()) {
+            log("No @EnableLog annotation found on main class");
+            return true;
+        }
 
         Element main = (Element) enableLogResult.toArray()[0];
         Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();
@@ -40,9 +43,8 @@ public class Processor extends AbstractProcessor {
         try {
             Context.collectEntitiesOp.execute();
             Context.createEntitiesLogServicesOp.execute();
-            Context.configureOp.execute();
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            log("Error while processing: {}", e.getMessage());
         }
 
         return true;
@@ -50,9 +52,9 @@ public class Processor extends AbstractProcessor {
 
     public static void write(TypeSpec execute) {
         try {
-            JavaFile javaFile = JavaFile.builder(Context.packageName, execute).build();
+            JavaFile javaFile = JavaFile.builder(Context.packageName + ".log_entities", execute).build();
             javaFile.writeTo(Context.filer);
-            System.out.println("File written");
+            log("File {} generated", execute.name);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

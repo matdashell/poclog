@@ -1,27 +1,36 @@
 package com.poczinha.log.hibernate.domain.response;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.poczinha.log.hibernate.domain.response.data.EntityModification;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonPropertyOrder({"identifier", "correlation", "date", "entities"})
 public class CorrelationModification {
-    private final String correlation;
     private final String identifier;
+    private final Long correlation;
+    private final LocalDateTime date;
 
     private final List<EntityModification> entities = new ArrayList<>();
 
-    public CorrelationModification(String correlation, String identifier) {
-        this.correlation = correlation;
+    public CorrelationModification(String identifier, Long correlation, LocalDateTime date) {
         this.identifier = identifier;
+        this.correlation = correlation;
+        this.date = date;
     }
 
-    public String getCorrelation() {
+    public Long getCorrelation() {
         return correlation;
     }
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
     }
 
     public List<EntityModification> getEntities() {
