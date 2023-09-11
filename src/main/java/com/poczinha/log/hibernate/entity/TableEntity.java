@@ -8,10 +8,14 @@ import java.time.LocalDateTime;
 public class TableEntity {
 
     @Id
+    @Column(name = "id", columnDefinition = "int")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "name", columnDefinition = "varchar(60)")
     private String name;
+
+    @Column(name = "includedAt", columnDefinition = "datetime")
     private LocalDateTime includedAt;
 
     public TableEntity(String name) {

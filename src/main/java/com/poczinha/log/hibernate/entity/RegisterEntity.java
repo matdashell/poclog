@@ -9,26 +9,33 @@ import javax.persistence.*;
 public class RegisterEntity {
 
     @Id
+    @Column(name = "id", columnDefinition = "bigint")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "identifier", columnDefinition = "varchar(30)")
     private String identifier;
+
+    @Column(name = "previus_value", columnDefinition = "varchar(255)")
     private String lastValue;
+
+    @Column(name = "new_value", columnDefinition = "varchar(255)")
     private String newValue;
 
+    @Column(name = "type", columnDefinition = "enum('C','U','D')")
     @Enumerated(EnumType.STRING)
     private TypeEnum type;
 
     @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name = "correlation_id", referencedColumnName = "id")
+    @JoinColumn(name = "correlation_id", referencedColumnName = "id", columnDefinition = "bigint")
     private CorrelationEntity correlation;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "table_id", referencedColumnName = "id")
+    @JoinColumn(name = "table_id", referencedColumnName = "id", columnDefinition = "int")
     private TableEntity table;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "column_id", referencedColumnName = "id")
+    @JoinColumn(name = "column_id", referencedColumnName = "id", columnDefinition = "int")
     private ColumnEntity column;
 
     public RegisterEntity(CorrelationEntity correlation, ColumnEntity column, TableEntity table, String identifier, String lastValue, String newValue, TypeEnum type) {

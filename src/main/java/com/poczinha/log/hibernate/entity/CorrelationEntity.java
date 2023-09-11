@@ -9,10 +9,14 @@ import java.util.UUID;
 public class CorrelationEntity {
 
     @Id
+    @Column(name = "id", columnDefinition = "bigint")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "identifier", columnDefinition = "varchar(30)")
     private String identifier;
+
+    @Column(name = "date", columnDefinition = "datetime")
     private LocalDateTime date;
 
     public CorrelationEntity() {
