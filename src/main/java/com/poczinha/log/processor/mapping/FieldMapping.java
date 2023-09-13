@@ -1,6 +1,5 @@
 package com.poczinha.log.processor.mapping;
 
-import com.poczinha.log.processor.annotation.LogEntity;
 import com.poczinha.log.processor.annotation.LogField;
 import com.poczinha.log.processor.util.Util;
 

@@ -2,8 +2,8 @@ package com.poczinha.log.hibernate.configuration;
 
 import com.poczinha.log.hibernate.controler.LogController;
 import com.poczinha.log.hibernate.domain.Correlation;
-import com.poczinha.log.hibernate.repository.ColumnRepository;
 import com.poczinha.log.hibernate.service.ColumnService;
+import com.poczinha.log.hibernate.service.CorrelationService;
 import com.poczinha.log.hibernate.service.RegisterService;
 import com.poczinha.log.hibernate.service.TableService;
 import org.springframework.context.annotation.Bean;
@@ -42,5 +42,10 @@ public class BeanConfiguration {
     @Bean
     public LogController logController() {
         return new LogController();
+    }
+
+    @Bean
+    public CorrelationService correlationService() {
+        return new CorrelationService();
     }
 }

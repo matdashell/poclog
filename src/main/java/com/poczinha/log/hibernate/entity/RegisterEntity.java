@@ -26,7 +26,7 @@ public class RegisterEntity {
     @Enumerated(EnumType.STRING)
     private TypeEnum type;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "correlation_id", referencedColumnName = "id", columnDefinition = "bigint")
     private CorrelationEntity correlation;
 

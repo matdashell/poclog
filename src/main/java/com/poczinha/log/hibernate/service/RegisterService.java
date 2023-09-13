@@ -32,6 +32,9 @@ public class RegisterService {
     @Autowired
     private RegisterRepository registerRepository;
 
+    @Autowired
+    private CorrelationService correlationService;
+
     public void registerCreate(TableEntity table, String field, String identifier, String newValue) {
         register(table, field, identifier, TypeEnum.C, null, newValue);
     }
@@ -49,6 +52,8 @@ public class RegisterService {
         ColumnEntity column = columnService.columnEntityWithName(field);
 
         RegisterEntity registerEntity = new RegisterEntity(correlation, column, table, identifier, lastValue, newValue, type);
+
+        correlationService.save(correlation);
         registerRepository.save(registerEntity);
     }
 
