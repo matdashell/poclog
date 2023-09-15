@@ -4,14 +4,13 @@ import com.poczinha.log.processor.annotation.LogEntity;
 import com.poczinha.log.processor.annotation.LogField;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.lang.annotation.Annotation;
+import java.text.DecimalFormat;
 
 public class Util {
 
@@ -62,7 +61,7 @@ public class Util {
         return null;
     }
 
-    public static boolean notEquals(Object value1, Object value2) {
+    public static boolean obNotEquals(Object value1, Object value2) {
         if (value1 != null && value2 != null) {
             return !value1.equals(value2);
         }
@@ -75,5 +74,27 @@ public class Util {
             return declaredType.asElement();
         }
         throw new RuntimeException("TypeMirror " + typeMirror + " is not a declared type");
+    }
+
+    public static boolean nuNotEquals(Object obj, Object obj2) {
+        if (obj instanceof Number && obj2 instanceof Number) {
+            DecimalFormat df = new DecimalFormat("#.################");
+            return obNotEquals(df.format(obj), df.format(obj2));
+        }
+
+        throw new RuntimeException("Object " + obj + " is not a number");
+    }
+
+    public static boolean isTypeNumeric(TypeMirror typeMirror) {
+        return typeMirror.getKind() == TypeKind.DOUBLE
+                || typeMirror.getKind() == TypeKind.FLOAT
+                || typeMirror.getKind() == TypeKind.INT
+                || typeMirror.getKind() == TypeKind.LONG
+                || typeMirror.getKind() == TypeKind.SHORT
+                || typeMirror.toString().equals("java.math.BigDecimal");
+    }
+
+    public static boolean isIdEntity(VariableElement entity) {
+        return containsAnnotation(entity, Id.class);
     }
 }

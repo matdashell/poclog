@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.lang.model.element.Modifier;
 import javax.persistence.EntityManager;
 
+import static com.poczinha.log.processor.util.Util.isTypeNumeric;
 import static com.poczinha.log.processor.util.Util.log;
 import static java.lang.String.format;
 
@@ -114,8 +115,12 @@ public class CreateEntitiesLogServicesOp {
 
             if (field.asType().getKind().isPrimitive()) {
                 method.beginControlFlow("if (currentEntity.$L != dbEntity.$L)", field.getAccess(), field.getAccess());
+
+            } else if (isTypeNumeric(field.asType())) {
+                method.beginControlFlow("if ($T.nuNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, field.getAccess(), field.getAccess());
+
             } else {
-                method.beginControlFlow("if ($T.notEquals(dbEntity.$L, currentEntity.$L))", Util.class, field.getAccess(), field.getAccess());
+                method.beginControlFlow("if ($T.obNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, field.getAccess(), field.getAccess());
             }
 
             method.addStatement("registerService.registerUpdate(table, $S, identifier, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L))", field.getName(), Util.class, field.getAccess(), field.getAccess());

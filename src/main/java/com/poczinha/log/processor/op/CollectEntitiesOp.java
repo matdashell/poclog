@@ -47,7 +47,7 @@ public class CollectEntitiesOp {
         TypeElement typeElement = (TypeElement) repository;
         for (TypeMirror superInterface : typeElement.getInterfaces()) {
             DeclaredType declaredType = (DeclaredType) superInterface;
-            if (declaredType.asElement().toString().startsWith("org.springframework.data.jpa.repository.JpaRepository")) {
+            if (declaredType.asElement().toString().startsWith("org.springframework.data")) {
                 List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
                 if (!typeArguments.isEmpty()) {
                     TypeMirror entity = typeArguments.get(0);
