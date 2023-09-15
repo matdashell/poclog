@@ -2,7 +2,7 @@ package com.poczinha.log.hibernate.entity;
 
 import com.poczinha.log.hibernate.domain.TypeEnum;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "tb_log_register")

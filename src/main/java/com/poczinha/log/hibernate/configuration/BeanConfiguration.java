@@ -17,7 +17,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.*;
 
 @Configuration
 @EnableAspectJAutoProxy

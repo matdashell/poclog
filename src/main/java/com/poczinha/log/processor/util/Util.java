@@ -2,13 +2,17 @@ package com.poczinha.log.processor.util;
 
 import com.poczinha.log.processor.annotation.LogEntity;
 import com.poczinha.log.processor.annotation.LogField;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.lang.annotation.Annotation;
 import java.text.DecimalFormat;
 

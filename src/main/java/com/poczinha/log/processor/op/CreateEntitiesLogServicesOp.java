@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.lang.model.element.Modifier;
-import javax.persistence.EntityManager;
+import jakarta.persistence.*;
 
 import static com.poczinha.log.processor.util.Util.isTypeNumeric;
 import static com.poczinha.log.processor.util.Util.log;
