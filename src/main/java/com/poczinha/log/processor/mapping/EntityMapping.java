@@ -13,13 +13,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.poczinha.log.processor.util.Util.log;
+
 public class EntityMapping {
     private FieldMapping id;
     private String name;
+    private final String repositoryPackage;
     private final Element entity;
     private final List<FieldMapping> fields = new ArrayList<>();
 
-    public EntityMapping(Element entity) {
+    public EntityMapping(Element entity, String repositoryPackage) {
+        this.repositoryPackage = repositoryPackage;
         this.entity = entity;
 
         setName();
@@ -35,7 +39,9 @@ public class EntityMapping {
 
     private void setName() {
         LogEntity logEntity = this.entity.getAnnotation(LogEntity.class);
-        this.name = Objects.equals(logEntity.name(), "") ? this.entity.getSimpleName().toString() : logEntity.name();
+        this.name = logEntity != null && !Objects.equals(logEntity.name(), "")
+                ? logEntity.name()
+                : this.entity.getSimpleName().toString();
     }
 
     private void setId(Element element) {
@@ -45,6 +51,10 @@ public class EntityMapping {
 
     public String getEntityName() {
         return entity.getSimpleName().toString();
+    }
+
+    public String getEntitySimpleName() {
+        return getEntityName().substring(0, 1).toLowerCase() + getEntityName().substring(1);
     }
 
     public TypeMirror asType() {
@@ -65,5 +75,9 @@ public class EntityMapping {
 
     public List<FieldMapping> getFields() {
         return fields;
+    }
+
+    public String getRepositoryPackage() {
+        return repositoryPackage;
     }
 }

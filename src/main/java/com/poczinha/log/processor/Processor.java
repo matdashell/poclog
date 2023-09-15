@@ -2,7 +2,7 @@ package com.poczinha.log.processor;
 
 import com.google.auto.service.AutoService;
 import com.poczinha.log.processor.annotation.EnableLog;
-import com.poczinha.log.processor.annotation.LogEntity;
+import com.poczinha.log.processor.annotation.LogPersistenceEntities;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 
@@ -26,7 +26,7 @@ public class Processor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        Set<? extends Element> elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(LogEntity.class);
+        Set<? extends Element> elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(LogPersistenceEntities.class);
 
         if (elementsAnnotatedWith.isEmpty()) return true;
 
@@ -41,10 +41,11 @@ public class Processor extends AbstractProcessor {
         Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();
 
         Context.filer = processingEnv.getFiler();
-        Context.entities = elementsAnnotatedWith;
+        Context.repositories = elementsAnnotatedWith;
 
         try {
             Context.collectEntitiesOp.execute();
+            Context.createAspectOp.execute();
             Context.createEntitiesLogServicesOp.execute();
         } catch (Exception e) {
             log("Error while processing: {}", e.getMessage());

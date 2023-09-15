@@ -4,6 +4,9 @@ import com.poczinha.log.processor.annotation.LogEntity;
 import com.poczinha.log.processor.annotation.LogField;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -64,5 +67,13 @@ public class Util {
             return !value1.equals(value2);
         }
         return value1 != value2;
+    }
+
+    public static Element typeMirrorToElement(TypeMirror typeMirror) {
+        if (typeMirror.getKind() == TypeKind.DECLARED) {
+            DeclaredType declaredType = (DeclaredType) typeMirror;
+            return declaredType.asElement();
+        }
+        throw new RuntimeException("TypeMirror " + typeMirror + " is not a declared type");
     }
 }

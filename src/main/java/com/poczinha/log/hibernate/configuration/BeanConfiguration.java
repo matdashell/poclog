@@ -2,17 +2,16 @@ package com.poczinha.log.hibernate.configuration;
 
 import com.poczinha.log.hibernate.controler.LogController;
 import com.poczinha.log.hibernate.domain.Correlation;
+import com.poczinha.log.hibernate.domain.SessionLogId;
 import com.poczinha.log.hibernate.service.ColumnService;
 import com.poczinha.log.hibernate.service.CorrelationService;
 import com.poczinha.log.hibernate.service.RegisterService;
 import com.poczinha.log.hibernate.service.TableService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.web.context.WebApplicationContext;
 
 @Configuration
+@EnableAspectJAutoProxy
 public class BeanConfiguration {
 
     @Bean
@@ -22,6 +21,15 @@ public class BeanConfiguration {
     )
     public Correlation correlation() {
         return new Correlation();
+    }
+
+    @Bean
+    @Scope(
+            value = WebApplicationContext.SCOPE_REQUEST,
+            proxyMode = ScopedProxyMode.TARGET_CLASS
+    )
+    public SessionLogId logIdentifier() {
+        return new SessionLogId();
     }
 
     @Bean
