@@ -9,7 +9,6 @@ import com.poczinha.log.processor.mapping.EntityMapping;
 import com.poczinha.log.processor.mapping.FieldMapping;
 import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.*;
-import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -17,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
+import javax.persistence.EntityManager;
 
 import static com.poczinha.log.processor.util.Util.isTypeNumeric;
 import static java.lang.String.format;

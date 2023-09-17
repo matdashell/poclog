@@ -1,7 +1,6 @@
 package com.poczinha.log.hibernate.entity;
 
-import jakarta.persistence.*;
-
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

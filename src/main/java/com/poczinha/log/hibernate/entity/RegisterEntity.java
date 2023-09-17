@@ -1,7 +1,8 @@
 package com.poczinha.log.hibernate.entity;
 
 import com.poczinha.log.domain.TypeEnum;
-import jakarta.persistence.*;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "tb_log_register")

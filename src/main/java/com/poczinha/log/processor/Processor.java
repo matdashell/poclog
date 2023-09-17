@@ -7,7 +7,6 @@ import com.poczinha.log.processor.util.PrefixLogger;
 import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
-import jakarta.persistence.Entity;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -17,6 +16,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.persistence.Entity;
 import java.io.IOException;
 import java.util.Set;
 

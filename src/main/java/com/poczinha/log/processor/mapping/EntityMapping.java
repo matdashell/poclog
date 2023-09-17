@@ -3,12 +3,12 @@ package com.poczinha.log.processor.mapping;
 import com.poczinha.log.annotation.LogEntity;
 import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.TypeName;
-import jakarta.persistence.Id;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
