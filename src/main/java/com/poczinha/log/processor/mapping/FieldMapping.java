@@ -1,6 +1,6 @@
 package com.poczinha.log.processor.mapping;
 
-import com.poczinha.log.processor.annotation.LogField;
+import com.poczinha.log.annotation.LogField;
 import com.poczinha.log.processor.util.Util;
 
 import javax.lang.model.element.Element;

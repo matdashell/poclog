@@ -1,7 +1,7 @@
-package com.poczinha.log.hibernate.controler;
+package com.poczinha.log.bean;
 
-import com.poczinha.log.hibernate.domain.response.CorrelationModification;
-import com.poczinha.log.hibernate.domain.response.PeriodModification;
+import com.poczinha.log.domain.response.CorrelationModification;
+import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.hibernate.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

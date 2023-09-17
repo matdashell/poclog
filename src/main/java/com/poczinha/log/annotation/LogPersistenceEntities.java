@@ -1,4 +1,4 @@
-package com.poczinha.log.processor.annotation;
+package com.poczinha.log.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

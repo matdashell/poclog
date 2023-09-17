@@ -1,4 +1,4 @@
-package com.poczinha.log.hibernate.domain.response.data;
+package com.poczinha.log.domain.response.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

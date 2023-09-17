@@ -1,4 +1,4 @@
-package com.poczinha.log.hibernate.domain;
+package com.poczinha.log.bean;
 
 import com.poczinha.log.hibernate.entity.CorrelationEntity;
 

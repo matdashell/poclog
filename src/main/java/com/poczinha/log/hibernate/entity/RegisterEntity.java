@@ -1,7 +1,6 @@
 package com.poczinha.log.hibernate.entity;
 
-import com.poczinha.log.hibernate.domain.TypeEnum;
-
+import com.poczinha.log.domain.TypeEnum;
 import jakarta.persistence.*;
 
 @Entity

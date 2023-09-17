@@ -1,11 +1,11 @@
 package com.poczinha.log.hibernate.service;
 
-import com.poczinha.log.hibernate.domain.Correlation;
-import com.poczinha.log.hibernate.domain.TypeEnum;
-import com.poczinha.log.hibernate.domain.response.CorrelationModification;
-import com.poczinha.log.hibernate.domain.response.PeriodModification;
-import com.poczinha.log.hibernate.domain.response.data.EntityModification;
-import com.poczinha.log.hibernate.domain.response.data.FieldModification;
+import com.poczinha.log.bean.Correlation;
+import com.poczinha.log.domain.TypeEnum;
+import com.poczinha.log.domain.response.CorrelationModification;
+import com.poczinha.log.domain.response.PeriodModification;
+import com.poczinha.log.domain.response.data.EntityModification;
+import com.poczinha.log.domain.response.data.FieldModification;
 import com.poczinha.log.hibernate.entity.ColumnEntity;
 import com.poczinha.log.hibernate.entity.CorrelationEntity;
 import com.poczinha.log.hibernate.entity.RegisterEntity;

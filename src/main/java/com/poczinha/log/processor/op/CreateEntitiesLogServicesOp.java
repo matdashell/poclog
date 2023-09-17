@@ -9,17 +9,16 @@ import com.poczinha.log.processor.mapping.EntityMapping;
 import com.poczinha.log.processor.mapping.FieldMapping;
 import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.lang.model.element.Modifier;
-import jakarta.persistence.*;
+import javax.lang.model.type.TypeMirror;
 
 import static com.poczinha.log.processor.util.Util.isTypeNumeric;
-import static com.poczinha.log.processor.util.Util.log;
 import static java.lang.String.format;
 
 public class CreateEntitiesLogServicesOp {
@@ -33,48 +32,33 @@ public class CreateEntitiesLogServicesOp {
                     .addModifiers(Modifier.PUBLIC)
                     .addAnnotation(Service.class);
 
-            log("writing generateClassFields of " + className);
             generateClassFields(builder);
 
-            log("writing createAndUpdateProcessor of " + className);
             createAndUpdateProcessor(builder, entity);
 
-            log("writing deleteProcessor of " + className);
             deleteProcessor(builder, entity);
 
-            log("writing class of " + className);
-            Processor.write(builder.build());
+            Processor.write(builder.build(), Context.PACKAGE_LOG_ENTITIES);
         }
     }
 
     private void generateClassFields(TypeSpec.Builder builder) {
 
-        FieldSpec.Builder registerService = FieldSpec.builder(RegisterService.class, "registerService")
-                .addModifiers(Modifier.PRIVATE)
-                .addAnnotation(Autowired.class);
+        FieldSpec registerService = Util.buildFieldBean((FieldSpec.builder(RegisterService.class, "registerService")));
+        FieldSpec entityManager = Util.buildFieldBean((FieldSpec.builder(EntityManager.class, "em")));
+        FieldSpec tableService = Util.buildFieldBean((FieldSpec.builder(TableService.class, "tableService")));
 
-        FieldSpec.Builder entityManager = FieldSpec.builder(EntityManager.class, "em")
-                .addModifiers(Modifier.PRIVATE)
-                .addAnnotation(Autowired.class);
-
-        FieldSpec.Builder tableService = FieldSpec.builder(TableService.class, "tableService")
-                .addModifiers(Modifier.PRIVATE)
-                .addAnnotation(Autowired.class);
-
-        builder.addField(registerService.build());
-        builder.addField(entityManager.build());
-        builder.addField(tableService.build());
+        builder.addField(registerService);
+        builder.addField(entityManager);
+        builder.addField(tableService);
     }
 
     private void deleteProcessor(TypeSpec.Builder builder, EntityMapping entity) {
-        MethodSpec.Builder method = MethodSpec.methodBuilder("logDelete")
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(TypeName.get(entity.getId().asType()), "entityId")
-                .addParameter(String.class, "identifier");
+        MethodSpec.Builder method = buildMethodLogDelete(entity);
+        TypeMirror typeEtity = entity.asType();
 
-        method.addStatement("$T dbEntity = em.find($T.class, entityId)", entity.asType(), entity.asType());
-        method.addStatement("$T tn = $S + \"[\" + entityId + \"]\"", String.class, entity.getName());
-        method.addStatement("$T table = tableService.tableEntityWithName(tn)", TableEntity.class);
+        method.addStatement("$T dbEntity = em.find($T.class, entityId)", typeEtity, typeEtity);
+        method.addStatement("$T table = tableService.tableEntityWithName($S)", TableEntity.class, entity.getName());
 
         method.addCode("\n");
 
@@ -87,57 +71,63 @@ public class CreateEntitiesLogServicesOp {
 
     private void createAndUpdateProcessor(TypeSpec.Builder builder, EntityMapping entity) {
 
-        AnnotationSpec transactional = AnnotationSpec.builder(Transactional.class)
-                .addMember("propagation", "$T.$L", Propagation.class, "REQUIRES_NEW")
-                .addMember("isolation", "$T.$L", Isolation.class, "READ_COMMITTED")
-                .build();
-
-        MethodSpec.Builder method = MethodSpec.methodBuilder("logCreateUpdate")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(transactional)
-                .addParameter(entity.getEntityTypeName(), "currentEntity")
-                .addParameter(String.class, "identifier");
-
+        MethodSpec.Builder method = buildMethodLogCreateUpdate(entity);
         FieldMapping id = entity.getId();
 
-        method.addStatement("$T tn = $S", String.class, entity.getName());
-        method.addStatement("$T table", TableEntity.class);
+        TypeName entityTypeName = entity.getEntityTypeName();
+        String access = id.getAccess();
+
+        method.addStatement("$T table = tableService.tableEntityWithName($S)", TableEntity.class, entity.getName());
         method.addCode("\n");
-
-        method.beginControlFlow(format("if (currentEntity.%s != null)", id.getAccess()));
-        method.addStatement("$T dbEntity = em.find($T.class, currentEntity.$L)", entity.getEntityTypeName(), entity.getEntityTypeName(), id.getAccess());
-        method.addStatement("tn = tn + \"[\" + dbEntity.$L + \"]\"", id.getAccess());
-        method.addStatement("table = tableService.tableEntityWithName(tn)");
-
+        method.beginControlFlow(format("if (currentEntity.%s != null)", access));
+        method.addStatement("$T dbEntity = em.find($T.class, currentEntity.$L)", entityTypeName, entityTypeName, access);
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
+            String fieldAccess = field.getAccess();
 
             if (field.asType().getKind().isPrimitive()) {
-                method.beginControlFlow("if (currentEntity.$L != dbEntity.$L)", field.getAccess(), field.getAccess());
+                method.beginControlFlow("if (currentEntity.$L != dbEntity.$L)", fieldAccess, fieldAccess);
 
             } else if (isTypeNumeric(field.asType())) {
-                method.beginControlFlow("if ($T.nuNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, field.getAccess(), field.getAccess());
+                method.beginControlFlow("if ($T.nuNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, fieldAccess, fieldAccess);
 
             } else {
-                method.beginControlFlow("if ($T.obNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, field.getAccess(), field.getAccess());
+                method.beginControlFlow("if ($T.obNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, fieldAccess, fieldAccess);
             }
 
-            method.addStatement("registerService.registerUpdate(table, $S, identifier, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L))", field.getName(), Util.class, field.getAccess(), field.getAccess());
+            method.addStatement("registerService.registerUpdate(table, $S, identifier, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L))", field.getName(), Util.class, fieldAccess, fieldAccess);
             method.endControlFlow();
         }
 
-        method.nextControlFlow("else");
-        method.addStatement("table = tableService.tableEntityWithName(tn)");
-
         method.addCode("\n");
+        method.nextControlFlow("else");
 
         for (FieldMapping field : entity.getFields()) {
             method.addStatement("registerService.registerCreate(table, $S, identifier, $T.valueOf(currentEntity.$L))", field.getName(), Util.class, field.getAccess());
         }
 
         method.endControlFlow();
-
         builder.addMethod(method.build());
+    }
+
+    private static MethodSpec.Builder buildMethodLogCreateUpdate(EntityMapping entity) {
+        AnnotationSpec transactional = AnnotationSpec.builder(Transactional.class)
+                .addMember("propagation", "$T.$L", Propagation.class, "REQUIRES_NEW")
+                .addMember("isolation", "$T.$L", Isolation.class, "READ_COMMITTED")
+                .build();
+
+        return MethodSpec.methodBuilder("logCreateUpdate")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(transactional)
+                .addParameter(entity.getEntityTypeName(), "currentEntity")
+                .addParameter(String.class, "identifier");
+    }
+
+    private static MethodSpec.Builder buildMethodLogDelete(EntityMapping entity) {
+        return MethodSpec.methodBuilder("logDelete")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(TypeName.get(entity.getId().asType()), "entityId")
+                .addParameter(String.class, "identifier");
     }
 }

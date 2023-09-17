@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.poczinha.log.hibernate.configuration.BeanConfiguration

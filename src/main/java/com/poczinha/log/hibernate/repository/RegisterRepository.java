@@ -1,10 +1,10 @@
 package com.poczinha.log.hibernate.repository;
 
-import com.poczinha.log.hibernate.domain.TypeEnum;
-import com.poczinha.log.hibernate.domain.response.CorrelationModification;
-import com.poczinha.log.hibernate.domain.response.PeriodModification;
-import com.poczinha.log.hibernate.domain.response.data.EntityModification;
-import com.poczinha.log.hibernate.domain.response.data.FieldModification;
+import com.poczinha.log.domain.TypeEnum;
+import com.poczinha.log.domain.response.CorrelationModification;
+import com.poczinha.log.domain.response.PeriodModification;
+import com.poczinha.log.domain.response.data.EntityModification;
+import com.poczinha.log.domain.response.data.FieldModification;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,7 +17,7 @@ import java.util.List;
 @Repository
 public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> {
 
-    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.PeriodModification(" +
+    @Query("SELECT DISTINCT new com.poczinha.log.domain.response.PeriodModification(" +
                 " r.identifier," +
                 " r.correlation.id," +
                 " r.correlation.date" +
@@ -28,7 +28,7 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
 
-    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.CorrelationModification(" +
+    @Query("SELECT DISTINCT new com.poczinha.log.domain.response.CorrelationModification(" +
                 " r.identifier," +
                 " r.correlation.id," +
                 " r.correlation.date" +
@@ -37,7 +37,7 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
             " WHERE r.correlation.id = :correlation")
     CorrelationModification findAllCorrelationModification(@Param("correlation") Long correlation);
 
-    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.data.EntityModification(" +
+    @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.EntityModification(" +
                 " r.table.name," +
                 " r.type" +
             " )" +
@@ -45,7 +45,7 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
             " WHERE r.correlation.id = :correlation")
     List<EntityModification> findAllEntityModifications(@Param("correlation") Long correlation);
 
-    @Query("SELECT DISTINCT new com.poczinha.log.hibernate.domain.response.data.FieldModification(" +
+    @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.FieldModification(" +
                 " r.column.name," +
                 " r.lastValue," +
                 " r.newValue" +

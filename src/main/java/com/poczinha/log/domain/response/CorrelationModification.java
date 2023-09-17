@@ -1,7 +1,7 @@
-package com.poczinha.log.hibernate.domain.response;
+package com.poczinha.log.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.poczinha.log.hibernate.domain.response.data.EntityModification;
+import com.poczinha.log.domain.response.data.EntityModification;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

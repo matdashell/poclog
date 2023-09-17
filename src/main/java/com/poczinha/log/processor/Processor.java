@@ -1,10 +1,14 @@
 package com.poczinha.log.processor;
 
 import com.google.auto.service.AutoService;
-import com.poczinha.log.processor.annotation.EnableLog;
-import com.poczinha.log.processor.annotation.LogPersistenceEntities;
+import com.poczinha.log.annotation.EnableLog;
+import com.poczinha.log.annotation.LogPersistenceEntities;
+import com.poczinha.log.processor.util.PrefixLogger;
+import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
+import jakarta.persistence.Entity;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -16,50 +20,77 @@ import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.util.Set;
 
-import static com.poczinha.log.processor.util.Util.log;
-
-@SupportedAnnotationTypes({"com.poczinha.log.processor.annotation.*"})
+@SupportedAnnotationTypes({"com.poczinha.log.annotation.*", "jakarta.persistence.Entity"})
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 @AutoService(javax.annotation.processing.Processor.class)
 public class Processor extends AbstractProcessor {
 
+    private final PrefixLogger log = new PrefixLogger(Processor.class);
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        Set<? extends Element> elementsAnnotatedWithLog = roundEnv.getElementsAnnotatedWith(LogPersistenceEntities.class);
+        Set<? extends Element> elementsAnnotatedWithEnableLog = roundEnv.getElementsAnnotatedWith(EnableLog.class);
 
-        Set<? extends Element> elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(LogPersistenceEntities.class);
+        if (elementsAnnotatedWithLog.isEmpty()) return true;
 
-        if (elementsAnnotatedWith.isEmpty()) return true;
-
-        Set<? extends Element> enableLogResult = roundEnv.getElementsAnnotatedWith(EnableLog.class);
-
-        if (enableLogResult.isEmpty()) {
-            log("No @EnableLog annotation found on main class");
+        if (elementsAnnotatedWithEnableLog.isEmpty()) {
+            log.info("No @EnableLog annotation found on main class");
             return true;
         }
 
-        Element main = (Element) enableLogResult.toArray()[0];
-        Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();
-
-        Context.filer = processingEnv.getFiler();
-        Context.repositories = elementsAnnotatedWith;
+        log.info("Processing @EnableLog annotation");
+        Element main = elementsAnnotatedWithEnableLog.iterator().next();
+        setupContext(main, elementsAnnotatedWithLog, roundEnv);
 
         try {
-            Context.collectEntitiesOp.execute();
-            Context.createAspectOp.execute();
-            Context.createEntitiesLogServicesOp.execute();
+            executeOperations();
         } catch (Exception e) {
-            log("Error while processing: {}", e.getMessage());
+            log.error("Error while processing: {}", e, e.getMessage());
         }
 
         return true;
     }
 
-    public static void write(TypeSpec execute) {
+    private void setupContext(Element main, Set<? extends Element> elementsAnnotatedWithLog, RoundEnvironment roundEnv) {
+        EnableLog annotation = main.getAnnotation(EnableLog.class);
+        Context.idName = annotation.headerName();
+        Context.logOnlyIfPresent = annotation.logOnlyIfPresent();
+        Context.filer = processingEnv.getFiler();
+        Context.repositories = elementsAnnotatedWithLog;
+        Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();
+
+        Util.setBasePackages(
+                roundEnv.getElementsAnnotatedWith(Entity.class),
+                roundEnv.getElementsAnnotatedWith(Repository.class)
+        );
+
+        log.info("Context: {}", Context.logInfos());
+    }
+
+    private void executeOperations() {
+        log.debug("Executing operations");
+        Context.collectEntitiesOp.execute();
+
+        log.debug("Executing operations");
+        Context.createAspectOp.execute();
+
+        log.debug("Executing operations");
+        Context.createEntitiesLogServicesOp.execute();
+
+        log.debug("Executing operations");
+        Context.configureOp.execute();
+
+        log.info("Finished processing");
+    }
+
+    public static void write(TypeSpec execute, String packageName) {
+        PrefixLogger log = new PrefixLogger(Processor.class);
         try {
-            JavaFile javaFile = JavaFile.builder(Context.packageName + ".log_entities", execute).build();
+            JavaFile javaFile = JavaFile.builder(Context.packageName + ".log_entities." + packageName, execute).build();
             javaFile.writeTo(Context.filer);
-            log("File {} generated", execute.name);
         } catch (IOException e) {
+            log.error("Error while writing file: {}", e, e.getMessage());
             throw new RuntimeException(e);
         }
     }

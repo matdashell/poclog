@@ -1,4 +1,4 @@
-package com.poczinha.log.hibernate.domain.response;
+package com.poczinha.log.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
