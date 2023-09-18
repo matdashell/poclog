@@ -12,7 +12,7 @@ public class ColumnEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", columnDefinition = "varchar(30)")
+    @Column(name = "name", columnDefinition = "varchar(60)")
     private String name;
 
     @Column(name = "included_at", columnDefinition = "datetime")
