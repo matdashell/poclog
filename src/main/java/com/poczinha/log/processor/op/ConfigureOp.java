@@ -1,21 +1,17 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.bean.LogHeaderConfiguration;
+import com.poczinha.log.bean.SessionIdentifier;
 import com.poczinha.log.domain.Constants;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
+import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -36,11 +32,14 @@ public class ConfigureOp {
                 .addAnnotation(Configuration.class)
                 .addSuperinterface(WebMvcConfigurer.class);
 
-        FieldSpec logHeaderConfiguration = buildFieldLogHeaderConfiguration();
         MethodSpec overrideInterface = buildMethodAddInterceptors();
+        FieldSpec logHeaderNameField = Util.buildFieldValue(String.class, "logHeaderName", "${audit.log.headerName:X-log-id}");
+        FieldSpec sessionIdentifier = Util.buildFieldBean(SessionIdentifier.class, "sessionIdentifier");
 
-        headerInterceptor.addField(logHeaderConfiguration);
         headerInterceptor.addMethod(overrideInterface);
+        headerInterceptor.addField(logHeaderNameField);
+        headerInterceptor.addField(sessionIdentifier);
+
         Processor.write(headerInterceptor.build(), Context.PACKAGE_CONFIGURATION);
     }
 
@@ -51,28 +50,11 @@ public class ConfigureOp {
 
         AnnotationSpec entityScan = buildAnnotationEntityScan();
         AnnotationSpec repositoryScan = buildAnnotationEnableJpaRepositories();
-        MethodSpec bean = buildBeanLogHeaderConfiguration();
 
         configuration.addAnnotation(entityScan);
         configuration.addAnnotation(repositoryScan);
-        configuration.addMethod(bean);
 
         Processor.write(configuration.build(), Context.PACKAGE_CONFIGURATION);
-    }
-
-    private static MethodSpec buildBeanLogHeaderConfiguration() {
-        AnnotationSpec scope = AnnotationSpec.builder(Scope.class)
-                .addMember("value", "$T.$L", WebApplicationContext.class, "SCOPE_REQUEST")
-                .addMember("proxyMode", "$T.$L", ScopedProxyMode.class, "TARGET_CLASS")
-                .build();
-
-        return MethodSpec.methodBuilder("logHeaderConfiguration")
-                .addAnnotation(Bean.class)
-                .addAnnotation(scope)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(LogHeaderConfiguration.class)
-                .addStatement("return new $T($L)", LogHeaderConfiguration.class, Context.logOnlyIfPresent)
-                .build();
     }
 
     private static AnnotationSpec buildAnnotationEnableJpaRepositories() {
@@ -95,19 +77,12 @@ public class ConfigureOp {
                 .addCode("registry.addInterceptor(new $T() {\n", HandlerInterceptor.class)
                 .addCode("  @Override\n")
                 .addCode("  public boolean preHandle($T request, $T response, $T handler) {\n", HttpServletRequest.class, HttpServletResponse.class, Object.class)
-                .addCode("    if (request.getHeader($S) != null) {\n", Context.idName)
-                .addCode("      logHeaderConfiguration.setId(request.getHeader($S));\n", Context.idName)
+                .addCode("    if (request.getHeader(logHeaderName) != null) {\n")
+                .addCode("      sessionIdentifier.setIdentifier(request.getHeader(logHeaderName));\n")
                 .addCode("    }\n")
                 .addCode("    return true;\n")
                 .addCode("  }\n")
                 .addCode("});\n")
-                .build();
-    }
-
-    private static FieldSpec buildFieldLogHeaderConfiguration() {
-        return FieldSpec.builder(LogHeaderConfiguration.class, "logHeaderConfiguration")
-                .addModifiers(Modifier.PRIVATE)
-                .addAnnotation(Autowired.class)
                 .build();
     }
 }

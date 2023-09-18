@@ -1,8 +1,7 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.hibernate.entity.TableEntity;
+import com.poczinha.log.bean.TypeCountManager;
 import com.poczinha.log.hibernate.service.RegisterService;
-import com.poczinha.log.hibernate.service.TableService;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
@@ -44,26 +43,25 @@ public class CreateEntitiesLogServicesOp {
 
     private void generateClassFields(TypeSpec.Builder builder) {
 
-        FieldSpec registerService = Util.buildFieldBean((FieldSpec.builder(RegisterService.class, "registerService")));
-        FieldSpec entityManager = Util.buildFieldBean((FieldSpec.builder(EntityManager.class, "em")));
-        FieldSpec tableService = Util.buildFieldBean((FieldSpec.builder(TableService.class, "tableService")));
+        FieldSpec typCountManager = Util.buildFieldBean(TypeCountManager.class, "typeCountManager");
+        FieldSpec registerService = Util.buildFieldBean(RegisterService.class, "registerService");
+        FieldSpec entityManager = Util.buildFieldBean(EntityManager.class, "em");
 
+        builder.addField(typCountManager);
         builder.addField(registerService);
         builder.addField(entityManager);
-        builder.addField(tableService);
     }
 
     private void deleteProcessor(TypeSpec.Builder builder, EntityMapping entity) {
         MethodSpec.Builder method = buildMethodLogDelete(entity);
         TypeMirror typeEtity = entity.asType();
 
+        method.addStatement("typeCountManager.countDeletion()");
         method.addStatement("$T dbEntity = em.find($T.class, entityId)", typeEtity, typeEtity);
-        method.addStatement("$T table = tableService.tableEntityWithName($S)", TableEntity.class, entity.getName());
-
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("registerService.registerDelete(table, $S, identifier, $T.valueOf(dbEntity.$L))", field.getName(), Util.class, field.getAccess());
+            method.addStatement("registerService.registerDelete($S, identifier, $T.valueOf(dbEntity.$L))", field.getName(), Util.class, field.getAccess());
         }
 
         builder.addMethod(method.build());
@@ -77,9 +75,9 @@ public class CreateEntitiesLogServicesOp {
         TypeName entityTypeName = entity.getEntityTypeName();
         String access = id.getAccess();
 
-        method.addStatement("$T table = tableService.tableEntityWithName($S)", TableEntity.class, entity.getName());
         method.addCode("\n");
         method.beginControlFlow(format("if (currentEntity.%s != null)", access));
+        method.addStatement("typeCountManager.countModification()");
         method.addStatement("$T dbEntity = em.find($T.class, currentEntity.$L)", entityTypeName, entityTypeName, access);
         method.addCode("\n");
 
@@ -96,15 +94,17 @@ public class CreateEntitiesLogServicesOp {
                 method.beginControlFlow("if ($T.obNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, fieldAccess, fieldAccess);
             }
 
-            method.addStatement("registerService.registerUpdate(table, $S, identifier, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L))", field.getName(), Util.class, fieldAccess, fieldAccess);
+            method.addStatement("registerService.registerUpdate($S, identifier, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L))", field.getName(), Util.class, fieldAccess, fieldAccess);
             method.endControlFlow();
         }
 
-        method.addCode("\n");
         method.nextControlFlow("else");
 
+        method.addStatement("typeCountManager.countCreation()");
+        method.addCode("\n");
+
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("registerService.registerCreate(table, $S, identifier, $T.valueOf(currentEntity.$L))", field.getName(), Util.class, field.getAccess());
+            method.addStatement("registerService.registerCreate($S, identifier, $T.valueOf(currentEntity.$L))", field.getName(), Util.class, field.getAccess());
         }
 
         method.endControlFlow();

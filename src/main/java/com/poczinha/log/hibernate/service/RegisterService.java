@@ -1,15 +1,15 @@
 package com.poczinha.log.hibernate.service;
 
 import com.poczinha.log.bean.Correlation;
+import com.poczinha.log.bean.TypeCountManager;
 import com.poczinha.log.domain.TypeEnum;
 import com.poczinha.log.domain.response.CorrelationModification;
 import com.poczinha.log.domain.response.PeriodModification;
-import com.poczinha.log.domain.response.data.EntityModification;
 import com.poczinha.log.domain.response.data.FieldModification;
+import com.poczinha.log.domain.response.data.GroupTypeModifications;
 import com.poczinha.log.hibernate.entity.ColumnEntity;
 import com.poczinha.log.hibernate.entity.CorrelationEntity;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
-import com.poczinha.log.hibernate.entity.TableEntity;
 import com.poczinha.log.hibernate.repository.RegisterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,31 +27,31 @@ public class RegisterService {
     private ColumnService columnService;
 
     @Autowired
-    private TableService tableService;
-
-    @Autowired
     private RegisterRepository registerRepository;
 
     @Autowired
     private CorrelationService correlationService;
 
-    public void registerCreate(TableEntity table, String field, String identifier, String newValue) {
-        register(table, field, identifier, TypeEnum.C, null, newValue);
+    @Autowired
+    private TypeCountManager typeCountManager;
+
+    public void registerCreate(String field, String identifier, String newValue) {
+        register(field, identifier, typeCountManager.getCreation(), null, newValue);
     }
 
-    public void registerDelete(TableEntity table, String field, String identifier, String lastValue) {
-        register(table, field, identifier, TypeEnum.D, lastValue, null);
+    public void registerDelete(String field, String identifier, String lastValue) {
+        register(field, identifier, typeCountManager.getDeletion(), lastValue, null);
     }
 
-    public void registerUpdate(TableEntity table, String field, String identifier, String lastValue, String newValue) {
-        register(table, field, identifier, TypeEnum.U, lastValue, newValue);
+    public void registerUpdate(String field, String identifier, String lastValue, String newValue) {
+        register(field, identifier, typeCountManager.getModification(), lastValue, newValue);
     }
 
-    private void register(TableEntity table, String field, String identifier, TypeEnum type, String lastValue, String newValue) {
-        CorrelationEntity correlation = this.correlation.getCorrelationEntity();
+    private void register(String field, String identifier, String type, String lastValue, String newValue) {
+        CorrelationEntity correlation = this.correlation.getCorrelationEntity(identifier);
         ColumnEntity column = columnService.columnEntityWithName(field);
 
-        RegisterEntity registerEntity = new RegisterEntity(correlation, column, table, identifier, lastValue, newValue, type);
+        RegisterEntity registerEntity = new RegisterEntity(correlation, column, lastValue, newValue, type);
 
         correlationService.save(correlation);
         registerRepository.save(registerEntity);
@@ -63,15 +63,14 @@ public class RegisterService {
 
     public CorrelationModification getAllModificationsByCorrelation(Long correlation) {
         CorrelationModification response = registerRepository.findAllCorrelationModification(correlation);
-        List<EntityModification> entities = registerRepository.findAllEntityModifications(correlation);
+        List<GroupTypeModifications> entities = registerRepository.findAllGroupTypesByCorrelation(correlation);
 
         response.getEntities().addAll(entities);
 
-        for (EntityModification entity : entities) {
+        for (GroupTypeModifications entity : entities) {
             List<FieldModification> modifications = registerRepository.findAllFieldModifications(
                     correlation,
-                    entity.getType(),
-                    entity.getEntity());
+                    entity.getType());
 
             entity.getModifications().addAll(modifications);
         }

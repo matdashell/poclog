@@ -20,8 +20,6 @@ public class CollectEntitiesOp {
         for (Element repository : Context.repositories) {
             Element entity = extractEntityOfRepository(repository);
 
-            if (Util.isIgnoreEntity(entity)) continue;
-
             String repositoryName = repository.getSimpleName().toString();
             String repositoryPackage = Util.getPackageName(repository) + "." + repositoryName;
 

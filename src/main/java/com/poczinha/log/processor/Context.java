@@ -29,8 +29,6 @@ public class Context {
 
     public static Filer filer;
 
-    public static String idName;
-    public static boolean logOnlyIfPresent;
     public static String repositoriesBasePackages;
     public static String entitiesBasePackages;
 
@@ -40,8 +38,6 @@ public class Context {
                 ", mappings=" + mappings +
                 ", packageName='" + packageName + '\'' +
                 ", filer=" + filer +
-                ", idName='" + idName + '\'' +
-                ", logOnlyIfPresent=" + logOnlyIfPresent +
                 ", repositoriesBasePackages='" + repositoriesBasePackages + '\'' +
                 ", entitiesBasePackages='" + entitiesBasePackages + '\'' +
                 '}';

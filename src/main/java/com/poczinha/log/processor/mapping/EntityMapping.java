@@ -1,6 +1,5 @@
 package com.poczinha.log.processor.mapping;
 
-import com.poczinha.log.annotation.LogEntity;
 import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.TypeName;
 
@@ -11,11 +10,9 @@ import javax.lang.model.util.ElementFilter;
 import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class EntityMapping {
     private FieldMapping id;
-    private String name;
     private final String repositoryPackage;
     private final Element entity;
     private final List<FieldMapping> fields = new ArrayList<>();
@@ -24,8 +21,6 @@ public class EntityMapping {
         this.repositoryPackage = repositoryPackage;
         this.entity = entity;
 
-        setName();
-
         for (VariableElement element : ElementFilter.fieldsIn(entity.getEnclosedElements())) {
             if (element.getAnnotation(Id.class) != null) {
                 setId(element);
@@ -33,13 +28,6 @@ public class EntityMapping {
                 fields.add(new FieldMapping(element));
             }
         }
-    }
-
-    private void setName() {
-        LogEntity logEntity = this.entity.getAnnotation(LogEntity.class);
-        this.name = logEntity != null && !Objects.equals(logEntity.name(), "")
-                ? logEntity.name()
-                : this.entity.getSimpleName().toString();
     }
 
     private void setId(Element element) {
@@ -65,10 +53,6 @@ public class EntityMapping {
 
     public FieldMapping getId() {
         return id;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public List<FieldMapping> getFields() {

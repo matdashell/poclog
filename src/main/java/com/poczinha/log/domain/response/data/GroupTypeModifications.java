@@ -6,23 +6,17 @@ import com.poczinha.log.domain.TypeEnum;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonPropertyOrder({"entity", "type", "modifications"})
-public class EntityModification {
-    private final String entity;
-    private final TypeEnum type;
+@JsonPropertyOrder({"type", "modifications"})
+public class GroupTypeModifications {
+    private final String type;
 
     private final List<FieldModification> modifications = new ArrayList<>();
 
-    public EntityModification(String entity, TypeEnum type) {
-        this.entity = entity;
+    public GroupTypeModifications(String type) {
         this.type = type;
     }
 
-    public String getEntity() {
-        return entity;
-    }
-
-    public TypeEnum getType() {
+    public String getType() {
         return type;
     }
 

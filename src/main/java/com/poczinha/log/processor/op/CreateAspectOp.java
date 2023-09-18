@@ -1,6 +1,6 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.bean.LogHeaderConfiguration;
+import com.poczinha.log.bean.SessionIdentifier;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
@@ -17,6 +17,8 @@ import java.util.List;
 public class CreateAspectOp {
     public void execute() {
         String packageLogEntities = Context.packageName + ".log_entities." + Context.PACKAGE_LOG_ENTITIES;
+        FieldSpec ignoreOnEmptyHeader = Util.buildFieldValue(Boolean.class, "ignoreOnEmptyHeader", "${audit.log.ignoreOnEmptyHeader:true}");
+        FieldSpec sessionIdentifier = Util.buildFieldBean(SessionIdentifier.class, "sessionIdentifier");
 
         for (EntityMapping entity : Context.mappings) {
 
@@ -28,15 +30,15 @@ public class CreateAspectOp {
                     .addAnnotation(Aspect.class)
                     .addAnnotation(Component.class);
 
-            FieldSpec logHeaderConfiguration = Util.buildFieldBean(FieldSpec.builder(LogHeaderConfiguration.class, "logHeaderConfiguration"));
-            FieldSpec entityService = Util.buildFieldBean((FieldSpec.builder(service, serviceSimpleName)));
+            FieldSpec entityService = Util.buildFieldBean(service, serviceSimpleName);
 
             createSaveProcessor(entity, aspectJInterceptor, serviceSimpleName);
             createSaveAllProcessor(entity, aspectJInterceptor, serviceSimpleName);
             createDeleteProcessor(entity, aspectJInterceptor, serviceSimpleName);
 
+            aspectJInterceptor.addField(ignoreOnEmptyHeader);
+            aspectJInterceptor.addField(sessionIdentifier);
             aspectJInterceptor.addField(entityService);
-            aspectJInterceptor.addField(logHeaderConfiguration);
 
             Processor.write(aspectJInterceptor.build(), Context.PACKAGE_ASPECT);
         }
@@ -59,9 +61,9 @@ public class CreateAspectOp {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(annotationSpec)
                 .addParameter(JoinPoint.class, "jp")
-                .beginControlFlow("if (logHeaderConfiguration.canLog())")
+                .beginControlFlow("if (sessionIdentifier.canLog(ignoreOnEmptyHeader))")
                 .addStatement("$T entity = ($T) jp.getArgs()[0]", entity.asType(), entity.asType())
-                .addStatement("$L.logCreateUpdate(entity, logHeaderConfiguration.getId())", serviceSimpleName)
+                .addStatement("$L.logCreateUpdate(entity, sessionIdentifier.getIdentifier())", serviceSimpleName)
                 .endControlFlow()
                 .build();
     }
@@ -84,10 +86,10 @@ public class CreateAspectOp {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(annotationSpec)
                 .addParameter(JoinPoint.class, "jp")
-                .beginControlFlow("if (logHeaderConfiguration.canLog())")
+                .beginControlFlow("if (sessionIdentifier.canLog(ignoreOnEmptyHeader))")
                 .addStatement("$T<$T> entities = ($T) jp.getArgs()[0]", List.class, entity.asType(), List.class)
                 .beginControlFlow("for ($T entity : entities)", entity.asType())
-                .addStatement("$L.logCreateUpdate(entity, logHeaderConfiguration.getId())", serviceSimpleName)
+                .addStatement("$L.logCreateUpdate(entity, sessionIdentifier.getIdentifier())", serviceSimpleName)
                 .endControlFlow()
                 .endControlFlow()
                 .build();
@@ -111,9 +113,9 @@ public class CreateAspectOp {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(annotationSpec)
                 .addParameter(JoinPoint.class, "jp")
-                .beginControlFlow("if (logHeaderConfiguration.canLog())")
+                .beginControlFlow("if (sessionIdentifier.canLog(ignoreOnEmptyHeader))")
                 .addStatement("$T entityId = ($T) jp.getArgs()[0]", entity.getId().asType(), entity.getId().asType())
-                .addStatement("$L.logDelete(entityId, logHeaderConfiguration.getId())", serviceSimpleName)
+                .addStatement("$L.logDelete(entityId, sessionIdentifier.getIdentifier())", serviceSimpleName)
                 .endControlFlow()
                 .build();
     }

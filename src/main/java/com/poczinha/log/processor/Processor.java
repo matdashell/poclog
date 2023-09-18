@@ -54,8 +54,6 @@ public class Processor extends AbstractProcessor {
 
     private void setupContext(Element main, Set<? extends Element> elementsAnnotatedWithLog, RoundEnvironment roundEnv) {
         EnableLog annotation = main.getAnnotation(EnableLog.class);
-        Context.idName = annotation.headerName();
-        Context.logOnlyIfPresent = annotation.logOnlyIfPresent();
         Context.filer = processingEnv.getFiler();
         Context.repositories = elementsAnnotatedWithLog;
         Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();

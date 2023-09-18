@@ -1,10 +1,12 @@
 package com.poczinha.log.processor.util;
 
-import com.poczinha.log.annotation.LogEntity;
 import com.poczinha.log.annotation.LogField;
 import com.poczinha.log.processor.Context;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -26,11 +28,6 @@ public class Util {
 
     public static String getAccessOf(String name) {
         return "get" + name.substring(0, 1).toUpperCase() + name.substring(1) + "()";
-    }
-
-    public static boolean isIgnoreEntity(Element element) {
-        LogEntity annotation = element.getAnnotation(LogEntity.class);
-        return annotation != null && annotation.ignore();
     }
 
     public static boolean isIgnoreField(Element element) {
@@ -145,10 +142,28 @@ public class Util {
         return typeArguments.isEmpty() ? null : typeArguments.get(0);
     }
 
-    public static FieldSpec buildFieldBean(FieldSpec.Builder registerService) {
-        return registerService
+    public static FieldSpec buildFieldBean(Class<?> type, String name) {
+        return FieldSpec.builder(type, name)
                 .addModifiers(Modifier.PRIVATE)
                 .addAnnotation(Autowired.class)
+                .build();
+    }
+
+    public static FieldSpec buildFieldBean(ClassName className, String name) {
+        return FieldSpec.builder(className, name)
+                .addModifiers(Modifier.PRIVATE)
+                .addAnnotation(Autowired.class)
+                .build();
+    }
+
+    public static FieldSpec buildFieldValue(Class<?> clazz, String name, String value) {
+        AnnotationSpec valueAnnotation = AnnotationSpec.builder(Value.class)
+                .addMember("value", "$S", value)
+                .build();
+
+        return FieldSpec.builder(clazz, name)
+                .addModifiers(Modifier.PRIVATE)
+                .addAnnotation(valueAnnotation)
                 .build();
     }
 }

@@ -9,7 +9,8 @@ public class Correlation {
         this.correlationEntity = new CorrelationEntity();
     }
 
-    public CorrelationEntity getCorrelationEntity() {
+    public CorrelationEntity getCorrelationEntity(String identifier) {
+        correlationEntity.setIdentifier(identifier);
         return correlationEntity;
     }
 }

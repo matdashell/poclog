@@ -3,7 +3,6 @@ package com.poczinha.log.bean;
 import com.poczinha.log.hibernate.service.ColumnService;
 import com.poczinha.log.hibernate.service.CorrelationService;
 import com.poczinha.log.hibernate.service.RegisterService;
-import com.poczinha.log.hibernate.service.TableService;
 import org.springframework.context.annotation.*;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -21,13 +20,26 @@ public class LogConfiguration {
     }
 
     @Bean
-    public ColumnService columnService() {
-        return new ColumnService();
+    @Scope(
+            value = WebApplicationContext.SCOPE_REQUEST,
+            proxyMode = ScopedProxyMode.TARGET_CLASS
+    )
+    public SessionIdentifier sessionIdentifier() {
+        return new SessionIdentifier();
     }
 
     @Bean
-    public TableService tableService() {
-        return new TableService();
+    @Scope(
+            value = WebApplicationContext.SCOPE_REQUEST,
+            proxyMode = ScopedProxyMode.TARGET_CLASS
+    )
+    public TypeCountManager typeCountManager() {
+        return new TypeCountManager();
+    }
+
+    @Bean
+    public ColumnService columnService() {
+        return new ColumnService();
     }
 
     @Bean

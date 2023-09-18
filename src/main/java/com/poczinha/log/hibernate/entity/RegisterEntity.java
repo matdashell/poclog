@@ -13,42 +13,32 @@ public class RegisterEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "identifier", columnDefinition = "varchar(30)")
-    private String identifier;
-
     @Column(name = "previus_value", columnDefinition = "varchar(255)")
     private String lastValue;
 
     @Column(name = "new_value", columnDefinition = "varchar(255)")
     private String newValue;
 
-    @Column(name = "type", columnDefinition = "enum('C','U','D')")
-    @Enumerated(EnumType.STRING)
-    private TypeEnum type;
+    @Column(name = "type", columnDefinition = "char(4)")
+    private String type;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "correlation_id", referencedColumnName = "id", columnDefinition = "bigint")
     private CorrelationEntity correlation;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "table_id", referencedColumnName = "id", columnDefinition = "int")
-    private TableEntity table;
-
-    @ManyToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "column_id", referencedColumnName = "id", columnDefinition = "int")
     private ColumnEntity column;
 
-    public RegisterEntity(CorrelationEntity correlation, ColumnEntity column, TableEntity table, String identifier, String lastValue, String newValue, TypeEnum type) {
+    public RegisterEntity() {
+    }
+
+    public RegisterEntity(CorrelationEntity correlation, ColumnEntity column, String lastValue, String newValue, String type) {
         this.correlation = correlation;
         this.column = column;
-        this.table = table;
-        this.identifier = identifier;
         this.lastValue = lastValue;
         this.newValue = newValue;
         this.type = type;
-    }
-
-    public RegisterEntity() {
     }
 
     public Long getId() {
@@ -57,14 +47,6 @@ public class RegisterEntity {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
     }
 
     public String getLastValue() {
@@ -83,11 +65,11 @@ public class RegisterEntity {
         this.newValue = newValue;
     }
 
-    public TypeEnum getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(TypeEnum type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -97,14 +79,6 @@ public class RegisterEntity {
 
     public void setCorrelation(CorrelationEntity correlation) {
         this.correlation = correlation;
-    }
-
-    public TableEntity getTable() {
-        return table;
-    }
-
-    public void setTable(TableEntity table) {
-        this.table = table;
     }
 
     public ColumnEntity getColumn() {

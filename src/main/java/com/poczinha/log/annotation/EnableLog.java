@@ -12,6 +12,4 @@ import java.lang.annotation.Target;
 @Import(LogConfiguration.class)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EnableLog {
-    String headerName();
-    boolean logOnlyIfPresent() default true;
 }
