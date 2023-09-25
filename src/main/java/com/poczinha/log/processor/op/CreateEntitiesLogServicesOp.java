@@ -1,7 +1,9 @@
 package com.poczinha.log.processor.op;
 
+import com.poczinha.log.bean.SessionIdentifier;
 import com.poczinha.log.bean.TypeCountManager;
-import com.poczinha.log.hibernate.service.RegisterService;
+import com.poczinha.log.domain.response.data.FieldModification;
+import com.poczinha.log.domain.response.data.GroupTypeModifications;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
@@ -17,8 +19,10 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import javax.persistence.EntityManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.poczinha.log.processor.util.Util.isTypeNumeric;
-import static java.lang.String.format;
 
 public class CreateEntitiesLogServicesOp {
     public void execute() {
@@ -44,11 +48,11 @@ public class CreateEntitiesLogServicesOp {
     private void generateClassFields(TypeSpec.Builder builder) {
 
         FieldSpec typCountManager = Util.buildFieldBean(TypeCountManager.class, "typeCountManager");
-        FieldSpec registerService = Util.buildFieldBean(RegisterService.class, "registerService");
+        FieldSpec sessionIdentifier = Util.buildFieldBean(SessionIdentifier.class, "sessionIdentifier");
         FieldSpec entityManager = Util.buildFieldBean(EntityManager.class, "em");
 
         builder.addField(typCountManager);
-        builder.addField(registerService);
+        builder.addField(sessionIdentifier);
         builder.addField(entityManager);
     }
 
@@ -56,13 +60,25 @@ public class CreateEntitiesLogServicesOp {
         MethodSpec.Builder method = buildMethodLogDelete(entity);
         TypeMirror typeEtity = entity.asType();
 
-        method.addStatement("typeCountManager.countDeletion()");
+        method.addCode("\n");
+        method.addStatement("$T groupTypeMod = new $T()", GroupTypeModifications.class, GroupTypeModifications.class);
+        method.addStatement("$T<$T> fieldModList = new $T<>()", List.class, FieldModification.class, ArrayList.class);
+        method.addCode("\n");
+
         method.addStatement("$T dbEntity = em.find($T.class, entityId)", typeEtity, typeEtity);
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("registerService.registerDelete($S, identifier, $T.valueOf(dbEntity.$L))", field.getName(), Util.class, field.getAccess());
+            method.addStatement("fieldModList.add(new $T($S, null, $T.valueOf(dbEntity.$L)))", FieldModification.class, field.getName(), Util.class, field.getAccess());
         }
+
+        method.addCode("\n");
+        method.beginControlFlow("if (!fieldModList.isEmpty())");
+        method.addStatement("groupTypeMod.setType(typeCountManager.getDeletion())");
+        method.addStatement("groupTypeMod.addModifications(fieldModList)");
+        method.addStatement("typeCountManager.countDeletion()");
+        method.addStatement("sessionIdentifier.addGroup(groupTypeMod)");
+        method.endControlFlow();
 
         builder.addMethod(method.build());
     }
@@ -76,8 +92,11 @@ public class CreateEntitiesLogServicesOp {
         String access = id.getAccess();
 
         method.addCode("\n");
-        method.beginControlFlow(format("if (currentEntity.%s != null)", access));
-        method.addStatement("typeCountManager.countModification()");
+        method.addStatement("$T groupTypeMod = new $T()", GroupTypeModifications.class, GroupTypeModifications.class);
+        method.addStatement("$T<$T> fieldModList = new $T<>()", List.class, FieldModification.class, ArrayList.class);
+
+        method.addCode("\n");
+        method.beginControlFlow("if (currentEntity.$L != null)", access);
         method.addStatement("$T dbEntity = em.find($T.class, currentEntity.$L)", entityTypeName, entityTypeName, access);
         method.addCode("\n");
 
@@ -94,20 +113,38 @@ public class CreateEntitiesLogServicesOp {
                 method.beginControlFlow("if ($T.obNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, fieldAccess, fieldAccess);
             }
 
-            method.addStatement("registerService.registerUpdate($S, identifier, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L))", field.getName(), Util.class, fieldAccess, fieldAccess);
+            method.addStatement("fieldModList.add(new $T($S, $T.valueOf(currentEntity.$L), $T.valueOf(dbEntity.$L)))", FieldModification.class, field.getName(), Util.class, fieldAccess, Util.class, fieldAccess);
             method.endControlFlow();
         }
 
-        method.nextControlFlow("else");
+        method.addCode("\n");
+        method.beginControlFlow("if (!fieldModList.isEmpty())");
+        method.addStatement("groupTypeMod.setType(typeCountManager.getModification())");
+        method.addStatement("typeCountManager.countModification()");
+        method.endControlFlow();
+        method.addCode("\n");
 
-        method.addStatement("typeCountManager.countCreation()");
+        method.nextControlFlow("else");
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("registerService.registerCreate($S, identifier, $T.valueOf(currentEntity.$L))", field.getName(), Util.class, field.getAccess());
+            method.addStatement("fieldModList.add(new $T($S, $T.valueOf(currentEntity.$L), null))", FieldModification.class, field.getName(), Util.class, field.getAccess());
         }
 
+        method.addCode("\n");
+        method.beginControlFlow("if (!fieldModList.isEmpty())");
+        method.addStatement("groupTypeMod.setType(typeCountManager.getCreation())");
+        method.addStatement("typeCountManager.countCreation()");
         method.endControlFlow();
+
+        method.endControlFlow();
+
+        method.addCode("\n");
+        method.beginControlFlow("if (!fieldModList.isEmpty())");
+        method.addStatement("groupTypeMod.addModifications(fieldModList)");
+        method.addStatement("sessionIdentifier.addGroup(groupTypeMod)");
+        method.endControlFlow();
+
         builder.addMethod(method.build());
     }
 

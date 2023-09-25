@@ -1,21 +1,31 @@
 package com.poczinha.log.bean;
 
+import com.poczinha.log.domain.response.CorrelationModification;
+import com.poczinha.log.domain.response.data.GroupTypeModifications;
+
+import java.util.List;
+
 public class SessionIdentifier {
-    private String identifier;
+
+    private final CorrelationModification correlationModification;
 
     public SessionIdentifier() {
-        this.identifier = "anonymous";
+        this.correlationModification = new CorrelationModification();
     }
 
     public String getIdentifier() {
-        return identifier;
+        return correlationModification.getIdentifier();
     }
 
     public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+        this.correlationModification.setIdentifier(identifier);
     }
 
     public boolean canLog(boolean ignoreOnEmptyHeader) {
-        return !ignoreOnEmptyHeader || !identifier.equals("anonymous");
+        return !ignoreOnEmptyHeader || !correlationModification.getIdentifier().equals("anonymous");
+    }
+
+    public void addGroup(GroupTypeModifications group) {
+        correlationModification.getEntities().add(group);
     }
 }
