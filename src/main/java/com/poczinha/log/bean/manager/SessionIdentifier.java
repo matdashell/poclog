@@ -1,9 +1,7 @@
-package com.poczinha.log.bean;
+package com.poczinha.log.bean.manager;
 
-import com.poczinha.log.domain.response.CorrelationModification;
-import com.poczinha.log.domain.response.data.GroupTypeModifications;
-
-import java.util.List;
+import com.poczinha.log.domain.CorrelationModification;
+import com.poczinha.log.domain.data.GroupTypeModifications;
 
 public class SessionIdentifier {
 
@@ -26,6 +24,14 @@ public class SessionIdentifier {
     }
 
     public void addGroup(GroupTypeModifications group) {
-        correlationModification.getEntities().add(group);
+        correlationModification.getGroups().add(group);
+    }
+
+    public boolean containsData() {
+        return !correlationModification.getGroups().isEmpty();
+    }
+
+    public CorrelationModification getCorrelationModification() {
+        return correlationModification;
     }
 }

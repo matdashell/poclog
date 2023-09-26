@@ -1,4 +1,4 @@
-package com.poczinha.log.bean;
+package com.poczinha.log.bean.manager;
 
 public class TypeCountManager {
     private int creation;

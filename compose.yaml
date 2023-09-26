@@ -9,12 +9,14 @@ services:
       MYSQL_DATABASE: "local"
 
   zookeeper:
-    image: "confluentinc/cp-zookeeper:latest"
-    container_name: "zookeeper"
-    ports:
-      - "2181:2181"
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
     environment:
-      ZOOKEEPER_CLIENT_PORT: "2181"
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
 
   kafka:
     image: "confluentinc/cp-kafka:latest"
@@ -23,36 +25,50 @@ services:
       - "zookeeper"
     ports:
       - "9092:9092"
+      - "9093:9093"
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_BROKER_ID: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_DOCKER://kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_DOCKER://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_DOCKER:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     command:
       - bash
       - -c
       - |
         /etc/confluent/docker/run &
         sleep 30
-        kafka-topics --create --topic audit_log --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1
+        kafka-topics --create --topic audit-log --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
         wait
 
   elasticsearch:
-    image: "docker.elastic.co/elasticsearch/elasticsearch:7.14.0"
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
     environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "discovery.type=single-node"
 
-  kibana:
-    image: "docker.elastic.co/kibana/kibana:7.14.0"
-    depends_on:
-      - "elasticsearch"
-    ports:
-      - "5601:5601"
-
   logstash:
-    image: "docker.elastic.co/logstash/logstash:7.14.0"
+    image: docker.elastic.co/logstash/logstash:7.15.0
+    container_name: logstash
+    ports:
+      - "5000:5000"
     volumes:
       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - elasticsearch
       - kafka
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.15.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+

@@ -1,6 +1,6 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.bean.SessionIdentifier;
+import com.poczinha.log.bean.manager.SessionIdentifier;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;

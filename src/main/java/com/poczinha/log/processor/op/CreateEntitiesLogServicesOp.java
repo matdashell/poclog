@@ -1,9 +1,9 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.bean.SessionIdentifier;
-import com.poczinha.log.bean.TypeCountManager;
-import com.poczinha.log.domain.response.data.FieldModification;
-import com.poczinha.log.domain.response.data.GroupTypeModifications;
+import com.poczinha.log.bean.manager.SessionIdentifier;
+import com.poczinha.log.bean.manager.TypeCountManager;
+import com.poczinha.log.domain.data.FieldModification;
+import com.poczinha.log.domain.data.GroupTypeModifications;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
