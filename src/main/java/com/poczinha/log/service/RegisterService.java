@@ -1,8 +1,7 @@
-package com.poczinha.log.hibernate.service;
+package com.poczinha.log.service;
 
 import com.poczinha.log.bean.Correlation;
 import com.poczinha.log.bean.TypeCountManager;
-import com.poczinha.log.domain.TypeEnum;
 import com.poczinha.log.domain.response.CorrelationModification;
 import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.domain.response.data.FieldModification;
@@ -35,26 +34,33 @@ public class RegisterService {
     @Autowired
     private TypeCountManager typeCountManager;
 
-    public void registerCreate(String field, String identifier, String newValue) {
-        register(field, identifier, typeCountManager.getCreation(), null, newValue);
+    @Autowired
+    private List<RegisterEntity> registerEntities;
+
+    public void registerCreate(String field, String newValue) {
+        register(field, typeCountManager.getCreation(), null, newValue);
     }
 
-    public void registerDelete(String field, String identifier, String lastValue) {
-        register(field, identifier, typeCountManager.getDeletion(), lastValue, null);
+    public void registerDelete(String field, String lastValue) {
+        register(field, typeCountManager.getDeletion(), lastValue, null);
     }
 
-    public void registerUpdate(String field, String identifier, String lastValue, String newValue) {
-        register(field, identifier, typeCountManager.getModification(), lastValue, newValue);
+    public void registerUpdate(String field, String lastValue, String newValue) {
+        register(field, typeCountManager.getModification(), lastValue, newValue);
     }
 
-    private void register(String field, String identifier, String type, String lastValue, String newValue) {
-        CorrelationEntity correlation = this.correlation.getCorrelationEntity(identifier);
+    private void register(String field, String type, String lastValue, String newValue) {
+        CorrelationEntity correlation = this.correlation.getCorrelationEntity();
         ColumnEntity column = columnService.columnEntityWithName(field);
-
         RegisterEntity registerEntity = new RegisterEntity(correlation, column, lastValue, newValue, type);
+        registerEntities.add(registerEntity);
+    }
 
-        correlationService.save(correlation);
-        registerRepository.save(registerEntity);
+    public void saveAll() {
+        if (!registerEntities.isEmpty()) {
+            correlationService.save(correlation.getCorrelationEntity());
+            registerRepository.saveAll(registerEntities);
+        }
     }
 
     public List<PeriodModification> getAllPeriodModificationBetween(LocalDateTime start, LocalDateTime end) {
@@ -63,6 +69,11 @@ public class RegisterService {
 
     public CorrelationModification getAllModificationsByCorrelation(Long correlation) {
         CorrelationModification response = registerRepository.findAllCorrelationModification(correlation);
+
+        if (response == null) {
+            return null;
+        }
+
         List<GroupTypeModifications> entities = registerRepository.findAllGroupTypesByCorrelation(correlation);
 
         response.getEntities().addAll(entities);

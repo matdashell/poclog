@@ -23,6 +23,10 @@ public class ColumnEntity {
         this.includedAt = LocalDateTime.now();
     }
 
+    public ColumnEntity(Integer id) {
+        this.id = id;
+    }
+
     public ColumnEntity() {
     }
 

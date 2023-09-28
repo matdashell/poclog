@@ -1,7 +1,5 @@
 package com.poczinha.log.hibernate.entity;
 
-import com.poczinha.log.domain.TypeEnum;
-
 import javax.persistence.*;
 
 @Entity

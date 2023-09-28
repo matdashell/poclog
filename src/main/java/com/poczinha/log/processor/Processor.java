@@ -4,7 +4,6 @@ import com.google.auto.service.AutoService;
 import com.poczinha.log.annotation.EnableLog;
 import com.poczinha.log.annotation.LogPersistenceEntities;
 import com.poczinha.log.processor.util.PrefixLogger;
-import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 import org.springframework.stereotype.Repository;
@@ -19,6 +18,8 @@ import javax.lang.model.element.TypeElement;
 import javax.persistence.Entity;
 import java.io.IOException;
 import java.util.Set;
+
+import static com.poczinha.log.processor.util.Util.findCommonBasePackage;
 
 @SupportedAnnotationTypes({"com.poczinha.log.annotation.*", "jakarta.persistence.Entity"})
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
@@ -46,37 +47,33 @@ public class Processor extends AbstractProcessor {
         try {
             executeOperations();
         } catch (Exception e) {
-            log.error("Error while processing: {}", e, e.getMessage());
+            log.error("Error while processing: {}", (Object) e.getStackTrace());
+            throw new RuntimeException(e);
         }
 
         return true;
     }
 
     private void setupContext(Element main, Set<? extends Element> elementsAnnotatedWithLog, RoundEnvironment roundEnv) {
-        EnableLog annotation = main.getAnnotation(EnableLog.class);
         Context.filer = processingEnv.getFiler();
         Context.repositories = elementsAnnotatedWithLog;
         Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();
 
-        Util.setBasePackages(
-                roundEnv.getElementsAnnotatedWith(Entity.class),
-                roundEnv.getElementsAnnotatedWith(Repository.class)
-        );
-
-        log.info("Context: {}", Context.logInfos());
+        Context.entitiesBasePackages = findCommonBasePackage(roundEnv.getElementsAnnotatedWith(Entity.class));
+        Context.repositoriesBasePackages = findCommonBasePackage(roundEnv.getElementsAnnotatedWith(Repository.class));
     }
 
     private void executeOperations() {
-        log.debug("Executing operations");
+        log.debug("Executing entities collection");
         Context.collectEntitiesOp.execute();
 
-        log.debug("Executing operations");
+        log.debug("Executing aspect creation");
         Context.createAspectOp.execute();
 
-        log.debug("Executing operations");
+        log.debug("Executing entities log services creation");
         Context.createEntitiesLogServicesOp.execute();
 
-        log.debug("Executing operations");
+        log.debug("Executing configuration creation");
         Context.configureOp.execute();
 
         log.info("Finished processing");
@@ -85,8 +82,11 @@ public class Processor extends AbstractProcessor {
     public static void write(TypeSpec execute, String packageName) {
         PrefixLogger log = new PrefixLogger(Processor.class);
         try {
-            JavaFile javaFile = JavaFile.builder(Context.packageName + ".log_entities." + packageName, execute).build();
+            String createPackage = Context.packageName + ".log_entities." + packageName;
+            JavaFile javaFile = JavaFile.builder(createPackage, execute).build();
             javaFile.writeTo(Context.filer);
+
+            log.debug("File created: " + createPackage + "." + execute.name);
         } catch (IOException e) {
             log.error("Error while writing file: {}", e, e.getMessage());
             throw new RuntimeException(e);

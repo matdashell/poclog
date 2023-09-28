@@ -1,10 +1,14 @@
 package com.poczinha.log.bean;
 
-import com.poczinha.log.hibernate.service.ColumnService;
-import com.poczinha.log.hibernate.service.CorrelationService;
-import com.poczinha.log.hibernate.service.RegisterService;
+import com.poczinha.log.hibernate.entity.RegisterEntity;
+import com.poczinha.log.service.ColumnService;
+import com.poczinha.log.service.CorrelationService;
+import com.poczinha.log.service.RegisterService;
 import org.springframework.context.annotation.*;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableAspectJAutoProxy
@@ -16,16 +20,7 @@ public class LogConfiguration {
             proxyMode = ScopedProxyMode.TARGET_CLASS
     )
     public Correlation correlation() {
-        return new Correlation();
-    }
-
-    @Bean
-    @Scope(
-            value = WebApplicationContext.SCOPE_REQUEST,
-            proxyMode = ScopedProxyMode.TARGET_CLASS
-    )
-    public SessionIdentifier sessionIdentifier() {
-        return new SessionIdentifier();
+        return new Correlation("anonymous");
     }
 
     @Bean
@@ -35,6 +30,15 @@ public class LogConfiguration {
     )
     public TypeCountManager typeCountManager() {
         return new TypeCountManager();
+    }
+
+    @Bean
+    @Scope(
+            value = WebApplicationContext.SCOPE_REQUEST,
+            proxyMode = ScopedProxyMode.TARGET_CLASS
+    )
+    public List<RegisterEntity> registerEntities() {
+        return new ArrayList<>();
     }
 
     @Bean
@@ -55,5 +59,10 @@ public class LogConfiguration {
     @Bean
     public CorrelationService correlationService() {
         return new CorrelationService();
+    }
+
+    @Bean
+    public LogHeaderInterceptor logHeaderInterceptor() {
+        return new LogHeaderInterceptor();
     }
 }

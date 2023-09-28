@@ -1,7 +1,10 @@
 package com.poczinha.log.processor.mapping;
 
+import com.poczinha.log.annotation.LogField;
 import com.poczinha.log.processor.util.Util;
+import com.poczinha.log.processor.validate.ValidateUtil;
 import com.squareup.javapoet.TypeName;
+import org.springframework.data.mapping.MappingException;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
@@ -10,29 +13,36 @@ import javax.lang.model.util.ElementFilter;
 import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class EntityMapping {
-    private FieldMapping id;
+    private final FieldMapping id;
     private final String repositoryPackage;
     private final Element entity;
-    private final List<FieldMapping> fields = new ArrayList<>();
+    private final List<FieldMapping> fields;
 
     public EntityMapping(Element entity, String repositoryPackage) {
+        Objects.requireNonNull(entity, "Entity must not be null");
+        Objects.requireNonNull(repositoryPackage, "Repository package must not be null");
+
         this.repositoryPackage = repositoryPackage;
         this.entity = entity;
+        this.fields = new ArrayList<>();
 
+        FieldMapping idField = null;
         for (VariableElement element : ElementFilter.fieldsIn(entity.getEnclosedElements())) {
             if (element.getAnnotation(Id.class) != null) {
-                setId(element);
+                if (this.getId() != null) {
+                    throw new MappingException("Entity ´" + element.getSimpleName() + "´ has more than one id field");
+                }
+                idField = new FieldMapping(element);
+
             } else if (!Util.isIgnoreField(element)) {
+                ValidateUtil.validField(element, this.entity);
                 fields.add(new FieldMapping(element));
             }
         }
-    }
-
-    private void setId(Element element) {
-        if (id != null) throw new RuntimeException("Entity " + entity.getSimpleName() + " has more than one id field");
-        this.id = new FieldMapping(element);
+        this.id = idField;
     }
 
     public String getEntityName() {

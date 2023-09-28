@@ -1,4 +1,4 @@
-package com.poczinha.log.hibernate.service;
+package com.poczinha.log.service;
 
 import com.poczinha.log.hibernate.entity.ColumnEntity;
 import com.poczinha.log.hibernate.repository.ColumnRepository;
@@ -12,7 +12,7 @@ public class ColumnService {
     private ColumnRepository columnRepository;
 
     public ColumnEntity columnEntityWithName(String name) {
-        ColumnEntity byName = columnRepository.findByName(name);
+        ColumnEntity byName = columnRepository.findIdByName(name);
         if (byName == null) {
             byName = new ColumnEntity(name);
             return columnRepository.save(byName);

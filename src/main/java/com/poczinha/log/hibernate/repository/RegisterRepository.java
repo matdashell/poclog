@@ -1,6 +1,5 @@
 package com.poczinha.log.hibernate.repository;
 
-import com.poczinha.log.domain.TypeEnum;
 import com.poczinha.log.domain.response.CorrelationModification;
 import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.domain.response.data.FieldModification;
@@ -23,7 +22,8 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
                 " r.correlation.date" +
             " )" +
             " FROM RegisterEntity r" +
-            " WHERE r.correlation.date BETWEEN :start AND :end")
+            " WHERE r.correlation.date BETWEEN :start AND :end" +
+            " ORDER BY r.correlation.date DESC")
     List<PeriodModification> findAllByDateBetween(
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
@@ -41,7 +41,8 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
                 " r.type" +
             " )" +
             " FROM RegisterEntity r" +
-            " WHERE r.correlation.id = :correlation")
+            " WHERE r.correlation.id = :correlation" +
+            " ORDER BY r.type ASC")
     List<GroupTypeModifications> findAllGroupTypesByCorrelation(@Param("correlation") Long correlation);
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.FieldModification(" +
@@ -51,7 +52,8 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
             " )" +
             " FROM RegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
-            " AND r.type = :type")
+            " AND r.type = :type" +
+            " ORDER BY r.column.name ASC")
     List<FieldModification> findAllFieldModifications(
             @Param("correlation") Long correlation,
             @Param("type") String type);

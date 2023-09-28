@@ -5,6 +5,10 @@ import com.poczinha.log.processor.op.CollectEntitiesOp;
 import com.poczinha.log.processor.op.ConfigureOp;
 import com.poczinha.log.processor.op.CreateAspectOp;
 import com.poczinha.log.processor.op.CreateEntitiesLogServicesOp;
+import com.poczinha.log.processor.op.impl.CollectEntitiesOpImpl;
+import com.poczinha.log.processor.op.impl.ConfigureOpImpl;
+import com.poczinha.log.processor.op.impl.CreateAspectOpImpl;
+import com.poczinha.log.processor.op.impl.CreateEntitiesLogServicesOpImpl;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
@@ -17,11 +21,10 @@ public class Context {
     public static final String PACKAGE_ASPECT = "aspect";
     public static final String PACKAGE_LOG_ENTITIES = "processor";
 
-
-    public static CollectEntitiesOp collectEntitiesOp = new CollectEntitiesOp();
-    public static CreateEntitiesLogServicesOp createEntitiesLogServicesOp = new CreateEntitiesLogServicesOp();
-    public static CreateAspectOp createAspectOp = new CreateAspectOp();
-    public static ConfigureOp configureOp = new ConfigureOp();
+    public static CollectEntitiesOp collectEntitiesOp = new CollectEntitiesOpImpl();
+    public static CreateEntitiesLogServicesOp createEntitiesLogServicesOp = new CreateEntitiesLogServicesOpImpl();
+    public static CreateAspectOp createAspectOp = new CreateAspectOpImpl();
+    public static ConfigureOp configureOp = new ConfigureOpImpl();
 
     public static Set<? extends Element> repositories;
     public static Set<EntityMapping> mappings = new HashSet<>();
@@ -31,15 +34,4 @@ public class Context {
 
     public static String repositoriesBasePackages;
     public static String entitiesBasePackages;
-
-    public static String logInfos() {
-        return "Context {" +
-                "repositories=" + repositories +
-                ", mappings=" + mappings +
-                ", packageName='" + packageName + '\'' +
-                ", filer=" + filer +
-                ", repositoriesBasePackages='" + repositoriesBasePackages + '\'' +
-                ", entitiesBasePackages='" + entitiesBasePackages + '\'' +
-                '}';
-    }
 }

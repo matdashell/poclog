@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LogField {
-    String name() default "";
+    String name();
     boolean ignore() default false;
 }

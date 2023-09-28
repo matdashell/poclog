@@ -1,10 +1,11 @@
 package com.poczinha.log.processor.util;
 
 import com.poczinha.log.annotation.LogField;
-import com.poczinha.log.processor.Context;
+import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -21,14 +22,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.lang.annotation.Annotation;
 import java.text.DecimalFormat;
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Set;
 
 public class Util {
-
-    public static String getAccessOf(String name) {
-        return "get" + name.substring(0, 1).toUpperCase() + name.substring(1) + "()";
-    }
 
     public static boolean isIgnoreField(Element element) {
         boolean isRelationField = containsAnnotation(element,
@@ -85,18 +83,13 @@ public class Util {
         throw new RuntimeException("Object " + obj + " is not a number");
     }
 
-    public static boolean isTypeNumeric(TypeMirror typeMirror) {
+    public static boolean isNumericType(TypeMirror typeMirror) {
         return typeMirror.getKind() == TypeKind.DOUBLE
                 || typeMirror.getKind() == TypeKind.FLOAT
                 || typeMirror.getKind() == TypeKind.INT
                 || typeMirror.getKind() == TypeKind.LONG
                 || typeMirror.getKind() == TypeKind.SHORT
                 || typeMirror.toString().equals("java.math.BigDecimal");
-    }
-
-    public static void setBasePackages(Set<? extends Element> entities, Set<? extends Element> repositories) {
-        Context.entitiesBasePackages = findCommonBasePackage(entities);
-        Context.repositoriesBasePackages = findCommonBasePackage(repositories);
     }
 
     public static String findCommonBasePackage(Set<? extends Element> elements) {
@@ -127,14 +120,18 @@ public class Util {
     }
 
     public static String getPackageName(Element element) {
+        String name = element.getSimpleName().toString();
         while (element.getKind() != ElementKind.PACKAGE) {
             element = element.getEnclosingElement();
         }
-        return ((PackageElement) element).getQualifiedName().toString();
+        return ((PackageElement) element).getQualifiedName().toString() + "." + name;
     }
 
     public static boolean isSpringDataInterface(TypeMirror superInterface) {
-        return ((DeclaredType) superInterface).asElement().toString().startsWith("org.springframework.data");
+        String fullClassName = ((DeclaredType) superInterface).asElement().toString();
+        return fullClassName.equals("org.springframework.data.jpa.repository.JpaRepository")
+                || fullClassName.equals("org.springframework.data.repository.CrudRepository")
+                || fullClassName.equals("org.springframework.data.repository.PagingAndSortingRepository");
     }
 
     public static TypeMirror getFirstTypeArgument(DeclaredType declaredType) {
@@ -165,5 +162,12 @@ public class Util {
                 .addModifiers(Modifier.PRIVATE)
                 .addAnnotation(valueAnnotation)
                 .build();
+    }
+
+    public static String toUpperSnakeCase(String input) {
+        input = Normalizer.normalize(input, Normalizer.Form.NFD);
+        input = input.replaceAll("[\\p{M}]", "");
+        input = input.replace(" ", "_");
+        return input.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase();
     }
 }

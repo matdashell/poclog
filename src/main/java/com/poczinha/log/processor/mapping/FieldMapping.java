@@ -9,17 +9,24 @@ import java.util.Objects;
 
 public class FieldMapping {
     private final Element field;
-    private String name;
+    private final String fieldSnakeCase;
+    private final String name;
 
     public FieldMapping(Element field) {
+        Objects.requireNonNull(field, "Field must not be null");
+
         this.field = field;
-        setName();
+        this.name = determineName();
+        this.fieldSnakeCase = Util.toUpperSnakeCase(this.field.getSimpleName().toString());
     }
 
-    private void setName() {
+    private String determineName() {
         LogField logEntity = this.field.getAnnotation(LogField.class);
-        if (logEntity == null) this.name = this.field.getSimpleName().toString();
-        else this.name = Objects.equals(logEntity.name(), "") ? this.field.getSimpleName().toString() : logEntity.name();
+        if (logEntity == null || Objects.equals(logEntity.name(), "")) {
+            return this.field.getSimpleName().toString();
+        } else {
+            return logEntity.name();
+        }
     }
 
     public String getName() {
@@ -34,7 +41,12 @@ public class FieldMapping {
         return field;
     }
 
+    public String getFieldSnakeCase() {
+        return fieldSnakeCase;
+    }
+
     public String getAccess() {
-        return Util.getAccessOf(field.getSimpleName().toString());
+        String simpleName = field.getSimpleName().toString();
+        return "get" + simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1) + "()";
     }
 }
