@@ -1,14 +1,8 @@
 package com.poczinha.log.processor;
 
 import com.poczinha.log.processor.mapping.EntityMapping;
-import com.poczinha.log.processor.op.CollectEntitiesOp;
-import com.poczinha.log.processor.op.ConfigureOp;
-import com.poczinha.log.processor.op.CreateAspectOp;
-import com.poczinha.log.processor.op.CreateEntitiesLogServicesOp;
-import com.poczinha.log.processor.op.impl.CollectEntitiesOpImpl;
-import com.poczinha.log.processor.op.impl.ConfigureOpImpl;
-import com.poczinha.log.processor.op.impl.CreateAspectOpImpl;
-import com.poczinha.log.processor.op.impl.CreateEntitiesLogServicesOpImpl;
+import com.poczinha.log.processor.op.*;
+import com.poczinha.log.processor.op.impl.*;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
@@ -20,6 +14,7 @@ public class Context {
     public static final String PACKAGE_CONFIGURATION = "configuration";
     public static final String PACKAGE_ASPECT = "aspect";
     public static final String PACKAGE_LOG_ENTITIES = "processor";
+    public static final String PACKAGE_HASH_ENTITIES = "hash";
 
     public static CollectEntitiesOp collectEntitiesOp = new CollectEntitiesOpImpl();
     public static CreateEntitiesLogServicesOp createEntitiesLogServicesOp = new CreateEntitiesLogServicesOpImpl();

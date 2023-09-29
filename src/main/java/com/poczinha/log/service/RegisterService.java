@@ -1,7 +1,6 @@
 package com.poczinha.log.service;
 
 import com.poczinha.log.bean.Correlation;
-import com.poczinha.log.bean.TypeCountManager;
 import com.poczinha.log.domain.response.CorrelationModification;
 import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.domain.response.data.FieldModification;
@@ -32,28 +31,28 @@ public class RegisterService {
     private CorrelationService correlationService;
 
     @Autowired
-    private TypeCountManager typeCountManager;
-
-    @Autowired
     private List<RegisterEntity> registerEntities;
 
-    public void registerCreate(String field, String newValue) {
-        register(field, typeCountManager.getCreation(), null, newValue);
+    public static final String CREATE_TYPE = "C-";
+    public static final String DELETE_TYPE = "D-";
+    public static final String UPDATE_TYPE = "U-";
+
+    public RegisterEntity processCreate(String field, String newValue) {
+        return process(field, CREATE_TYPE, null, newValue);
     }
 
-    public void registerDelete(String field, String lastValue) {
-        register(field, typeCountManager.getDeletion(), lastValue, null);
+    public RegisterEntity processDelete(String field, String lastValue) {
+        return process(field, DELETE_TYPE, lastValue, null);
     }
 
-    public void registerUpdate(String field, String lastValue, String newValue) {
-        register(field, typeCountManager.getModification(), lastValue, newValue);
+    public RegisterEntity processUpdate(String field, String lastValue, String newValue) {
+        return process(field, UPDATE_TYPE, lastValue, newValue);
     }
 
-    private void register(String field, String type, String lastValue, String newValue) {
-        CorrelationEntity correlation = this.correlation.getCorrelationEntity();
+    private RegisterEntity process(String field, String type, String lastValue, String newValue) {
+        CorrelationEntity correlationEntity = correlation.getCorrelationEntity();
         ColumnEntity column = columnService.columnEntityWithName(field);
-        RegisterEntity registerEntity = new RegisterEntity(correlation, column, lastValue, newValue, type);
-        registerEntities.add(registerEntity);
+        return new RegisterEntity(correlationEntity, column, lastValue, newValue, type);
     }
 
     public void saveAll() {
@@ -72,20 +71,20 @@ public class RegisterService {
 
         if (response == null) {
             return null;
+        } else {
+            List<GroupTypeModifications> entities = registerRepository.findAllGroupTypesByCorrelation(correlation);
+
+            response.getEntities().addAll(entities);
+
+            for (GroupTypeModifications entity : entities) {
+                List<FieldModification> modifications = registerRepository.findAllFieldModifications(
+                        correlation,
+                        entity.getType());
+
+                entity.getModifications().addAll(modifications);
+            }
+
+            return response;
         }
-
-        List<GroupTypeModifications> entities = registerRepository.findAllGroupTypesByCorrelation(correlation);
-
-        response.getEntities().addAll(entities);
-
-        for (GroupTypeModifications entity : entities) {
-            List<FieldModification> modifications = registerRepository.findAllFieldModifications(
-                    correlation,
-                    entity.getType());
-
-            entity.getModifications().addAll(modifications);
-        }
-
-        return response;
     }
 }

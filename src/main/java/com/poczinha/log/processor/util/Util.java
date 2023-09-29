@@ -21,12 +21,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.lang.annotation.Annotation;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class Util {
+
+    private static final DecimalFormat DF = new DecimalFormat("#.################");
 
     public static boolean isIgnoreField(Element element) {
         boolean isRelationField = containsAnnotation(element,
@@ -60,10 +64,7 @@ public class Util {
     }
 
     public static boolean obNotEquals(Object value1, Object value2) {
-        if (value1 != null && value2 != null) {
-            return !value1.equals(value2);
-        }
-        return value1 != value2;
+        return !Objects.equals(value1, value2);
     }
 
     public static Element typeMirrorToElement(TypeMirror typeMirror) {
@@ -76,10 +77,8 @@ public class Util {
 
     public static boolean nuNotEquals(Object obj, Object obj2) {
         if (obj instanceof Number && obj2 instanceof Number) {
-            DecimalFormat df = new DecimalFormat("#.################");
-            return obNotEquals(df.format(obj), df.format(obj2));
+            return obNotEquals(DF.format(obj), DF.format(obj2));
         }
-
         throw new RuntimeException("Object " + obj + " is not a number");
     }
 

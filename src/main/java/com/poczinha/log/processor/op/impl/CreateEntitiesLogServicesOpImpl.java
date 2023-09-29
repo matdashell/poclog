@@ -1,6 +1,6 @@
 package com.poczinha.log.processor.op.impl;
 
-import com.poczinha.log.bean.TypeCountManager;
+import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import javax.persistence.EntityManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.poczinha.log.processor.util.Util.isNumericType;
 
@@ -51,12 +54,9 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
     }
 
     private void generateClassFields(TypeSpec.Builder builder) {
-
-        FieldSpec typCountManager = Util.buildFieldBean(TypeCountManager.class, "typeCountManager");
         FieldSpec registerService = Util.buildFieldBean(RegisterService.class, "registerService");
         FieldSpec entityManager = Util.buildFieldBean(EntityManager.class, "em");
 
-        builder.addField(typCountManager);
         builder.addField(registerService);
         builder.addField(entityManager);
     }
@@ -65,13 +65,16 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
         MethodSpec.Builder method = buildMethodLogDelete(entity);
         TypeMirror typeEtity = entity.asType();
 
-        method.addStatement("typeCountManager.countDeletion()");
+        method.addStatement("$T<$T> reg = new $T<>()", List.class, RegisterEntity.class, ArrayList.class);
         method.addStatement("$T dbEntity = em.find($T.class, entityId)", typeEtity, typeEtity);
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("registerService.registerDelete($L, $T.valueOf(dbEntity.$L))", field.getFieldSnakeCase(), Util.class, field.getAccess());
+            method.addStatement("reg.add(registerService.processDelete($L, $T.valueOf(dbEntity.$L)))", field.getFieldSnakeCase(), Util.class, field.getAccess());
         }
+
+        method.addCode("\n");
+        method.addStatement("return reg");
 
         builder.addMethod(method.build());
     }
@@ -84,9 +87,10 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
         TypeName entityTypeName = entity.getEntityTypeName();
         String access = id.getAccess();
 
+        method.addStatement("$T<$T> reg = new $T<>()", List.class, RegisterEntity.class, ArrayList.class);
+
         method.addCode("\n");
         method.beginControlFlow("if (currentEntity.$L != null)", access);
-        method.addStatement("typeCountManager.countModification()");
         method.addStatement("$T dbEntity = em.find($T.class, currentEntity.$L)", entityTypeName, entityTypeName, access);
         method.addCode("\n");
 
@@ -103,20 +107,22 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
                 method.beginControlFlow("if ($T.obNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, fieldAccess, fieldAccess);
             }
 
-            method.addStatement("registerService.registerUpdate($L, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L))", field.getFieldSnakeCase(), Util.class, fieldAccess, fieldAccess);
+            method.addStatement("reg.add(registerService.processUpdate($L, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L)))", field.getFieldSnakeCase(), Util.class, fieldAccess, fieldAccess);
             method.endControlFlow();
         }
 
         method.nextControlFlow("else");
-
-        method.addStatement("typeCountManager.countCreation()");
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("registerService.registerCreate($L, $T.valueOf(currentEntity.$L))", field.getFieldSnakeCase(), Util.class, field.getAccess());
+            method.addStatement("reg.add(registerService.processCreate($L, $T.valueOf(currentEntity.$L)))", field.getFieldSnakeCase(), Util.class, field.getAccess());
         }
 
         method.endControlFlow();
+
+        method.addCode("\n");
+        method.addStatement("return reg");
+
         builder.addMethod(method.build());
     }
 
@@ -126,15 +132,17 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
                 .addMember("isolation", "$T.$L", Isolation.class, "READ_COMMITTED")
                 .build();
 
-        return MethodSpec.methodBuilder("logCreateUpdate")
+        return MethodSpec.methodBuilder("processLogCreateUpdate")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(transactional)
+                .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class))
                 .addParameter(entity.getEntityTypeName(), "currentEntity");
     }
 
     private static MethodSpec.Builder buildMethodLogDelete(EntityMapping entity) {
-        return MethodSpec.methodBuilder("logDelete")
+        return MethodSpec.methodBuilder("processLogDelete")
                 .addModifiers(Modifier.PUBLIC)
+                .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class))
                 .addParameter(TypeName.get(entity.getId().asType()), "entityId");
     }
 }

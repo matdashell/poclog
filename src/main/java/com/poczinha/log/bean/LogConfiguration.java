@@ -28,15 +28,6 @@ public class LogConfiguration {
             value = WebApplicationContext.SCOPE_REQUEST,
             proxyMode = ScopedProxyMode.TARGET_CLASS
     )
-    public TypeCountManager typeCountManager() {
-        return new TypeCountManager();
-    }
-
-    @Bean
-    @Scope(
-            value = WebApplicationContext.SCOPE_REQUEST,
-            proxyMode = ScopedProxyMode.TARGET_CLASS
-    )
     public List<RegisterEntity> registerEntities() {
         return new ArrayList<>();
     }
@@ -64,5 +55,10 @@ public class LogConfiguration {
     @Bean
     public LogHeaderInterceptor logHeaderInterceptor() {
         return new LogHeaderInterceptor();
+    }
+
+    @Bean
+    public RegisterManager registerManager() {
+        return new RegisterManager();
     }
 }
