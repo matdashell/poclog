@@ -5,6 +5,7 @@ import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.service.CorrelationService;
 import com.poczinha.log.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +24,13 @@ public class LogController {
 
     @GetMapping("/period-modification/between/{start}/{end}")
     @ResponseStatus(HttpStatus.OK)
-    public List<PeriodModification> getAllPeriodModificationBetween(
+    public Page<PeriodModification> getAllPeriodModificationBetween(
             @PathVariable LocalDateTime start,
-            @PathVariable LocalDateTime end) {
+            @PathVariable LocalDateTime end,
+            @RequestParam int page,
+            @RequestParam int size) {
 
-        return registerService.getAllPeriodModificationBetween(start, end);
+        return registerService.getAllPeriodModificationBetween(start, end, page, size);
     }
 
     @GetMapping("/modifications/correlation/{correlation}")
@@ -40,7 +43,10 @@ public class LogController {
 
     @GetMapping("/period-modification/identifiers")
     @ResponseStatus(HttpStatus.OK)
-    public List<PeriodModification> getAllPeriodModificationByIdentifiers(@RequestParam List<String> identifiers) {
-        return correlationService.findAllByIdentifier(identifiers);
+    public Page<PeriodModification> getAllPeriodModificationByIdentifiers(
+            @RequestParam List<String> values,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return correlationService.findAllByIdentifier(values, page, size);
     }
 }

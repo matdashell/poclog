@@ -64,11 +64,10 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
         MethodSpec.Builder method = buildMethodLogDelete(entity);
 
         method.addStatement("$T<$T> reg = new $T<>()", List.class, RegisterEntity.class, ArrayList.class);
-        createProjection(method, entity, "entityId");
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("reg.add(registerService.processDelete($L, $T.valueOf(dbEntity.$L)))", field.getFieldSnakeCase(), Util.class, field.getAccess());
+            method.addStatement("reg.add(registerService.processDelete($L))", field.getFieldSnakeCase());
         }
 
         method.addCode("\n");
@@ -80,11 +79,19 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
     private void createAndUpdateProcessor(TypeSpec.Builder builder, EntityMapping entity) throws ClassNotFoundException {
         MethodSpec.Builder method = buildMethodLogCreateUpdate(entity);
 
+        FieldMapping id = entity.getId();
+        String projectionName = entity.getEntityName() + "Projection";
+        String packageProjection = Context.packageName + Context.PACKAGE_PROJECTION_ENTITIES;
+        ClassName projectionClassName = ClassName.get(packageProjection, projectionName);
+
         method.addStatement("$T<$T> reg = new $T<>()", List.class, RegisterEntity.class, ArrayList.class);
 
         method.addCode("\n");
-        method.beginControlFlow("if (currentEntity.$L != null)", entity.getId().getAccess());
-        createProjection(method, entity, "currentEntity" + "." + entity.getId().getAccess());
+        method.beginControlFlow("if (currentEntity.$L != null)", id.getAccess());
+        method.addStatement("$T expression = $T.PROJECTION_EXPRESSION", String.class, projectionClassName);
+        method.addCode("$T dbEntity = em.createQuery(expression, $T.class)\n", projectionClassName, projectionClassName);
+        method.addCode(".setParameter($S, currentEntity.$L)\n", id.getFieldSimpleName(), id.getAccess());
+        method.addStatement(".getSingleResult()");
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
@@ -100,7 +107,7 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
                 method.beginControlFlow("if ($T.obNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, fieldAccess, fieldAccess);
             }
 
-            method.addStatement("reg.add(registerService.processUpdate($L, $T.valueOf(dbEntity.$L), Util.valueOf(currentEntity.$L)))", field.getFieldSnakeCase(), Util.class, fieldAccess, fieldAccess);
+            method.addStatement("reg.add(registerService.processUpdate($L, $T.valueOf(currentEntity.$L)))", field.getFieldSnakeCase(), Util.class, fieldAccess);
             method.endControlFlow();
         }
 
@@ -137,17 +144,5 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class))
                 .addParameter(TypeName.get(entity.getId().asType()), "entityId");
-    }
-
-    private void createProjection(MethodSpec.Builder method, EntityMapping mapping, String getter) {
-        FieldMapping id = mapping.getId();
-        String projectionName = mapping.getEntityName() + "Projection";
-        String packageProjection = Context.packageName + Context.PACKAGE_PROJECTION_ENTITIES;
-        ClassName projectionClassName = ClassName.get(packageProjection, projectionName);
-
-        method.addStatement("$T expression = $T.PROJECTION_EXPRESSION", String.class, projectionClassName);
-        method.addCode("$T dbEntity = em.createQuery(expression, $T.class)\n", projectionClassName, projectionClassName);
-        method.addCode(".setParameter($S, $L)\n", id.getFieldSimpleName(), getter);
-        method.addStatement(".getSingleResult()");
     }
 }

@@ -11,10 +11,15 @@ import com.poczinha.log.hibernate.entity.CorrelationEntity;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.poczinha.log.hibernate.repository.RegisterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RegisterService {
@@ -42,25 +47,25 @@ public class RegisterService {
     public static final String UPDATE_TYPE = "U-";
 
     public RegisterEntity processCreate(String field, String newValue) {
-        return process(field, CREATE_TYPE, null, newValue);
+        return process(field, CREATE_TYPE, newValue);
     }
 
-    public RegisterEntity processDelete(String field, String lastValue) {
-        return process(field, DELETE_TYPE, lastValue, null);
+    public RegisterEntity processDelete(String field) {
+        return process(field, DELETE_TYPE, null);
     }
 
-    public RegisterEntity processUpdate(String field, String lastValue, String newValue) {
-        return process(field, UPDATE_TYPE, lastValue, newValue);
+    public RegisterEntity processUpdate(String field, String newValue) {
+        return process(field, UPDATE_TYPE, newValue);
     }
 
-    private RegisterEntity process(String field, String type, String lastValue, String newValue) {
+    private RegisterEntity process(String field, String type, String newValue) {
         ColumnEntity column = logColumnCache.get(field);
         if (column == null) {
             column = columnService.columnEntityWithName(field);
             logColumnCache.put(field, column);
         }
         CorrelationEntity correlationEntity = correlation.getCorrelationEntity();
-        return new RegisterEntity(correlationEntity, column, lastValue, newValue, type);
+        return new RegisterEntity(correlationEntity, column, newValue, type);
     }
 
     public void saveAll() {
@@ -70,29 +75,42 @@ public class RegisterService {
         }
     }
 
-    public List<PeriodModification> getAllPeriodModificationBetween(LocalDateTime start, LocalDateTime end) {
-        return registerRepository.findAllByDateBetween(start, end);
+    public Page<PeriodModification> getAllPeriodModificationBetween(LocalDateTime start, LocalDateTime end, int page, int size) {
+        return registerRepository.findAllByDateBetween(start, end, PageRequest.of(page, size));
     }
 
     public CorrelationModification getAllModificationsByCorrelation(Long correlation) {
         CorrelationModification response = registerRepository.findAllCorrelationModification(correlation);
 
-        if (response == null) {
-            return null;
-        } else {
-            List<GroupTypeModifications> entities = registerRepository.findAllGroupTypesByCorrelation(correlation);
+        if (response == null) return null;
 
-            response.getEntities().addAll(entities);
+        List<GroupTypeModifications> entities = Optional.ofNullable(registerRepository.findAllGroupTypesByCorrelation(correlation))
+                .orElse(Collections.emptyList());
 
-            for (GroupTypeModifications entity : entities) {
-                List<FieldModification> modifications = registerRepository.findAllFieldModifications(
+        response.getEntities().addAll(entities);
+        Pageable pageable = PageRequest.of(0, 1);
+        entities.forEach(entity -> processEntityModifications(correlation, entity, pageable));
+
+        return response;
+    }
+
+    private void processEntityModifications(Long correlation, GroupTypeModifications entity, Pageable pageable) {
+        List<FieldModification> modifications = Optional.ofNullable(registerRepository.findAllFieldModifications(correlation, entity.getType()))
+                .orElse(Collections.emptyList());
+
+        if (!entity.getType().startsWith(CREATE_TYPE)) {
+            String typeId = entity.getType().substring(2);
+            modifications.forEach(modification -> {
+                String lastNewValue = registerRepository.findLasNewValue(
+                        modification.getColumn(),
                         correlation,
-                        entity.getType());
-
-                entity.getModifications().addAll(modifications);
-            }
-
-            return response;
+                        modification.getNewValue(),
+                        List.of(CREATE_TYPE + typeId, UPDATE_TYPE + typeId),
+                        pageable).getContent().get(0);
+                modification.setLastValue(lastNewValue);
+            });
         }
+
+        entity.getModifications().addAll(modifications);
     }
 }

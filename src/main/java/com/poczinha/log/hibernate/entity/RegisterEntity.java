@@ -11,9 +11,6 @@ public class RegisterEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "previus_value", columnDefinition = "varchar(255)")
-    private String lastValue;
-
     @Column(name = "new_value", columnDefinition = "varchar(255)")
     private String newValue;
 
@@ -31,10 +28,9 @@ public class RegisterEntity {
     public RegisterEntity() {
     }
 
-    public RegisterEntity(CorrelationEntity correlation, ColumnEntity column, String lastValue, String newValue, String type) {
+    public RegisterEntity(CorrelationEntity correlation, ColumnEntity column, String newValue, String type) {
         this.correlation = correlation;
         this.column = column;
-        this.lastValue = lastValue;
         this.newValue = newValue;
         this.type = type;
     }
@@ -45,14 +41,6 @@ public class RegisterEntity {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getLastValue() {
-        return lastValue;
-    }
-
-    public void setLastValue(String lastValue) {
-        this.lastValue = lastValue;
     }
 
     public String getNewValue() {

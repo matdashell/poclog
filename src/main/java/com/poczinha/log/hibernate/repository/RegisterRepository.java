@@ -5,6 +5,8 @@ import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.domain.response.data.FieldModification;
 import com.poczinha.log.domain.response.data.GroupTypeModifications;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,9 +26,10 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
             " FROM RegisterEntity r" +
             " WHERE r.correlation.date BETWEEN :start AND :end" +
             " ORDER BY r.correlation.date DESC")
-    List<PeriodModification> findAllByDateBetween(
+    Page<PeriodModification> findAllByDateBetween(
             @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
+            @Param("end") LocalDateTime end,
+            Pageable pageRequest);
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.CorrelationModification(" +
                 " r.correlation.identifier," +
@@ -47,7 +50,6 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.FieldModification(" +
                 " r.column.name," +
-                " r.lastValue," +
                 " r.newValue" +
             " )" +
             " FROM RegisterEntity r" +
@@ -57,4 +59,18 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
     List<FieldModification> findAllFieldModifications(
             @Param("correlation") Long correlation,
             @Param("type") String type);
+
+    @Query("SELECT r.newValue" +
+            " FROM RegisterEntity r" +
+            " WHERE r.type IN(:types)" +
+            " AND r.column.name = :columnName" +
+            " AND r.correlation.id < :id" +
+            " AND r.newValue <> :newValue" +
+            " ORDER BY r.correlation.id DESC")
+    Page<String> findLasNewValue(
+            @Param("columnName") String columnName,
+            @Param("id") Long id,
+            @Param("newValue") String newValue,
+            @Param("types") List<String> types,
+            Pageable pageRequest);
 }
