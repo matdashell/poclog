@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeMirror;
 import javax.persistence.EntityManager;
 
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import static com.poczinha.log.processor.util.Util.isNumericType;
 public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogServicesOp {
 
     @Override
-    public void execute() {
+    public void execute() throws ClassNotFoundException {
         for (EntityMapping entity : Context.mappings) {
             String className = entity.getEntityName() + "LogService";
 
@@ -63,10 +62,9 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
 
     private void deleteProcessor(TypeSpec.Builder builder, EntityMapping entity) {
         MethodSpec.Builder method = buildMethodLogDelete(entity);
-        TypeMirror typeEtity = entity.asType();
 
         method.addStatement("$T<$T> reg = new $T<>()", List.class, RegisterEntity.class, ArrayList.class);
-        method.addStatement("$T dbEntity = em.find($T.class, entityId)", typeEtity, typeEtity);
+        createProjection(method, entity, "entityId");
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
@@ -79,19 +77,14 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
         builder.addMethod(method.build());
     }
 
-    private void createAndUpdateProcessor(TypeSpec.Builder builder, EntityMapping entity) {
-
+    private void createAndUpdateProcessor(TypeSpec.Builder builder, EntityMapping entity) throws ClassNotFoundException {
         MethodSpec.Builder method = buildMethodLogCreateUpdate(entity);
-        FieldMapping id = entity.getId();
-
-        TypeName entityTypeName = entity.getEntityTypeName();
-        String access = id.getAccess();
 
         method.addStatement("$T<$T> reg = new $T<>()", List.class, RegisterEntity.class, ArrayList.class);
 
         method.addCode("\n");
-        method.beginControlFlow("if (currentEntity.$L != null)", access);
-        method.addStatement("$T dbEntity = em.find($T.class, currentEntity.$L)", entityTypeName, entityTypeName, access);
+        method.beginControlFlow("if (currentEntity.$L != null)", entity.getId().getAccess());
+        createProjection(method, entity, "currentEntity" + "." + entity.getId().getAccess());
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
@@ -144,5 +137,17 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class))
                 .addParameter(TypeName.get(entity.getId().asType()), "entityId");
+    }
+
+    private void createProjection(MethodSpec.Builder method, EntityMapping mapping, String getter) {
+        FieldMapping id = mapping.getId();
+        String projectionName = mapping.getEntityName() + "Projection";
+        String packageProjection = Context.packageName + Context.PACKAGE_PROJECTION_ENTITIES;
+        ClassName projectionClassName = ClassName.get(packageProjection, projectionName);
+
+        method.addStatement("$T expression = $T.PROJECTION_EXPRESSION", String.class, projectionClassName);
+        method.addCode("$T dbEntity = em.createQuery(expression, $T.class)\n", projectionClassName, projectionClassName);
+        method.addCode(".setParameter($S, $L)\n", id.getFieldSimpleName(), getter);
+        method.addStatement(".getSingleResult()");
     }
 }

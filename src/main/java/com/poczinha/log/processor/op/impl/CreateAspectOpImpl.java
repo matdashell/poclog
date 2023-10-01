@@ -21,7 +21,7 @@ public class CreateAspectOpImpl implements CreateAspectOp {
 
     @Override
     public void execute() {
-        String packageLogEntities = Context.packageName + ".log_entities." + Context.PACKAGE_LOG_ENTITIES;
+        String packageLogEntities = Context.packageName + Context.PACKAGE_LOG_ENTITIES;
         FieldSpec ignoreOnEmptyHeader = Util.buildFieldValue(Boolean.class, "ignoreOnEmptyHeader", "${audit.log.ignoreOnEmptyHeader:true}");
         FieldSpec correlation = Util.buildFieldBean(Correlation.class, "correlation");
         FieldSpec registerManager = Util.buildFieldBean(RegisterManager.class, "registerManager");

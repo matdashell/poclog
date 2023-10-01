@@ -1,6 +1,7 @@
 package com.poczinha.log.service;
 
 import com.poczinha.log.bean.Correlation;
+import com.poczinha.log.bean.LogColumnCache;
 import com.poczinha.log.domain.response.CorrelationModification;
 import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.domain.response.data.FieldModification;
@@ -33,6 +34,9 @@ public class RegisterService {
     @Autowired
     private List<RegisterEntity> registerEntities;
 
+    @Autowired
+    private LogColumnCache logColumnCache;
+
     public static final String CREATE_TYPE = "C-";
     public static final String DELETE_TYPE = "D-";
     public static final String UPDATE_TYPE = "U-";
@@ -50,8 +54,12 @@ public class RegisterService {
     }
 
     private RegisterEntity process(String field, String type, String lastValue, String newValue) {
+        ColumnEntity column = logColumnCache.get(field);
+        if (column == null) {
+            column = columnService.columnEntityWithName(field);
+            logColumnCache.put(field, column);
+        }
         CorrelationEntity correlationEntity = correlation.getCorrelationEntity();
-        ColumnEntity column = columnService.columnEntityWithName(field);
         return new RegisterEntity(correlationEntity, column, lastValue, newValue, type);
     }
 

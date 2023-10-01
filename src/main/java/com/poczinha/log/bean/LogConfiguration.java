@@ -61,4 +61,9 @@ public class LogConfiguration {
     public RegisterManager registerManager() {
         return new RegisterManager();
     }
+
+    @Bean
+    public LogColumnCache logColumnCache() {
+        return new LogColumnCache();
+    }
 }

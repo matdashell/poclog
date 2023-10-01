@@ -63,9 +63,12 @@ public class Processor extends AbstractProcessor {
         Context.repositoriesBasePackages = findCommonBasePackage(roundEnv.getElementsAnnotatedWith(Repository.class));
     }
 
-    private void executeOperations() {
+    private void executeOperations() throws ClassNotFoundException {
         log.debug("Executing entities collection");
         Context.collectEntitiesOp.execute();
+
+        log.debug("Executing projection entities creation");
+        Context.createProjectionEntitiesOp.execute();
 
         log.debug("Executing aspect creation");
         Context.createAspectOp.execute();
@@ -82,7 +85,7 @@ public class Processor extends AbstractProcessor {
     public static void write(TypeSpec execute, String packageName) {
         PrefixLogger log = new PrefixLogger(Processor.class);
         try {
-            String createPackage = Context.packageName + ".log_entities." + packageName;
+            String createPackage = Context.packageName + packageName;
             JavaFile javaFile = JavaFile.builder(createPackage, execute).build();
             javaFile.writeTo(Context.filer);
 

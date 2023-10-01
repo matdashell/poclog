@@ -37,8 +37,8 @@ public class FieldMapping {
         return field.asType();
     }
 
-    public Element getField() {
-        return field;
+    public String getFieldSimpleName() {
+        return field.getSimpleName().toString();
     }
 
     public String getFieldSnakeCase() {
@@ -48,5 +48,9 @@ public class FieldMapping {
     public String getAccess() {
         String simpleName = field.getSimpleName().toString();
         return "get" + simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1) + "()";
+    }
+
+    public String getNameAccess() {
+        return getAccess().replace("()", "");
     }
 }
