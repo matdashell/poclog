@@ -15,13 +15,17 @@ public class Context {
     public static final String PACKAGE_CONFIGURATION = BASE + ".configuration";
     public static final String PACKAGE_ASPECT = BASE + ".aspect";
     public static final String PACKAGE_LOG_ENTITIES = BASE + ".service";
-    public static final String PACKAGE_PROJECTION_ENTITIES = BASE + ".projection";
+    public static final String PACKAGE_RESOLVER_ENTITIES = BASE + ".resolver";
+
+    public static final String ASPECT_NAME = "LogAspect";
+    public static final String SERVICE_NAME = "LogService";
+    public static final String RESOLVER_NAME = "LogResolver";
 
     public static CollectEntitiesOp collectEntitiesOp = new CollectEntitiesOpImpl();
     public static CreateEntitiesLogServicesOp createEntitiesLogServicesOp = new CreateEntitiesLogServicesOpImpl();
     public static CreateAspectOp createAspectOp = new CreateAspectOpImpl();
     public static ConfigureOp configureOp = new ConfigureOpImpl();
-    public static CreateProjectionEntityOp createProjectionEntitiesOp = new CreateProjectionEntityOpImpl();
+    public static CreateProjectionEntityOp createProjectionEntitiesOp = new CreateResolverEntityOpImpl();
 
     public static Set<? extends Element> repositories;
     public static Set<EntityMapping> mappings = new HashSet<>();

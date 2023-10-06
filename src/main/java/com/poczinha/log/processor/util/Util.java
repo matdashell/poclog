@@ -1,13 +1,21 @@
 package com.poczinha.log.processor.util;
 
 import com.poczinha.log.annotation.LogField;
+import com.poczinha.log.hibernate.entity.CorrelationEntity;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.hibernate.Session;
+import org.hibernate.engine.spi.EntityEntry;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.persister.entity.AbstractEntityPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -16,10 +24,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -168,5 +173,23 @@ public class Util {
         input = input.replaceAll("[\\p{M}]", "");
         input = input.replace(" ", "_");
         return input.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase();
+    }
+
+    public static EntityEntry getEntityEntry(SessionImplementor session, Object entity) {
+        return session.getPersistenceContext().getEntry(entity);
+    }
+
+    public static EntityPersister getEntityPersister(SessionImplementor session, Object entity) {
+        return session.getEntityPersister(null, entity);
+    }
+
+    public static int getIndexFromPropertyName(EntityPersister persister, String propertyName) {
+        String[] propertyNames = persister.getPropertyNames();
+        for (int i = 0; i < propertyNames.length; i++) {
+            if (propertyNames[i].equals(propertyName)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Property name not found: " + propertyName);
     }
 }

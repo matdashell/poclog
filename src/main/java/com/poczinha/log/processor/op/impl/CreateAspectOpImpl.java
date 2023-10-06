@@ -17,6 +17,9 @@ import org.springframework.stereotype.Component;
 import javax.lang.model.element.Modifier;
 import java.util.List;
 
+import static com.poczinha.log.processor.Context.ASPECT_NAME;
+import static com.poczinha.log.processor.Context.SERVICE_NAME;
+
 public class CreateAspectOpImpl implements CreateAspectOp {
 
     @Override
@@ -28,10 +31,10 @@ public class CreateAspectOpImpl implements CreateAspectOp {
 
         for (EntityMapping entity : Context.mappings) {
 
-            ClassName service = ClassName.get(packageLogEntities, entity.getEntityName() + "LogService");
-            String serviceSimpleName = entity.getEntitySimpleName() + "LogService";
+            ClassName service = ClassName.get(packageLogEntities, entity.getEntityName() + SERVICE_NAME);
+            String serviceSimpleName = entity.getEntitySimpleName() + SERVICE_NAME;
 
-            TypeSpec.Builder aspectJInterceptor = TypeSpec.classBuilder(entity.getEntityName() + "LogAspect")
+            TypeSpec.Builder aspectJInterceptor = TypeSpec.classBuilder(entity.getEntityName() + ASPECT_NAME)
                     .addModifiers(Modifier.PUBLIC)
                     .addAnnotation(Aspect.class)
                     .addAnnotation(Component.class);
@@ -72,14 +75,9 @@ public class CreateAspectOpImpl implements CreateAspectOp {
                 .beginControlFlow("if (correlation.canLog(ignoreOnEmptyHeader))")
                     .addStatement("$T entity = ($T) jp.getArgs()[0]", entity.asType(), entity.asType())
                     .addStatement("$T<$T> regs = $L.processLogCreateUpdate(entity)", List.class, RegisterEntity.class, serviceSimpleName)
-                    .beginControlFlow("try")
-                        .addStatement("$T result = jp.proceed()", Object.class)
-                        .addStatement("registerManager.addRegisterEntities(regs, $T.valueOf(entity.$L))", String.class, entity.getId().getAccess())
-                        .addStatement("return result")
-                        .nextControlFlow("catch ($T e)", Throwable.class)
-                        .addStatement("registerManager.rollback()")
-                        .addStatement("throw e")
-                    .endControlFlow()
+                    .addStatement("$T result = registerManager.execute(jp)", Object.class)
+                    .addStatement("registerManager.addRegisterEntities(regs, entity.$L)", entity.getId().getAccess())
+                    .addStatement("return result")
                 .nextControlFlow("else")
                     .addStatement("return jp.proceed()")
                 .endControlFlow()
@@ -108,15 +106,8 @@ public class CreateAspectOpImpl implements CreateAspectOp {
                 .addParameter(ProceedingJoinPoint.class, "jp")
                     .beginControlFlow("if (correlation.canLog(ignoreOnEmptyHeader))")
                     .addStatement("$T entityId = ($T) jp.getArgs()[0]", entity.getId().asType(), entity.getId().asType())
-                    .addStatement("$T<$T> regs = $L.processLogDelete(entityId)", List.class, RegisterEntity.class, serviceSimpleName)
-                    .beginControlFlow("try")
-                        .addStatement("$T result = jp.proceed()", Object.class)
-                        .addStatement("registerManager.addRegisterEntities(regs, $T.valueOf(entityId))", String.class)
-                        .addStatement("return result")
-                        .nextControlFlow("catch ($T e)", Throwable.class)
-                        .addStatement("registerManager.rollback()")
-                        .addStatement("throw e")
-                    .endControlFlow()
+                    .addStatement("$T<$T> regs = $L.processLogDelete()", List.class, RegisterEntity.class, serviceSimpleName)
+                    .addStatement("return registerManager.executeAndRegister(jp, regs, entityId)")
                 .nextControlFlow("else")
                     .addStatement("return jp.proceed()")
                 .endControlFlow()

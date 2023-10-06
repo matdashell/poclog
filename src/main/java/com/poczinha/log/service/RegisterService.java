@@ -14,11 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Optional;
 
 @Service
@@ -37,7 +42,7 @@ public class RegisterService {
     private CorrelationService correlationService;
 
     @Autowired
-    private List<RegisterEntity> registerEntities;
+    private EntityManager entityManager;
 
     @Autowired
     private LogColumnCache logColumnCache;
@@ -68,10 +73,27 @@ public class RegisterService {
         return new RegisterEntity(correlationEntity, column, newValue, type);
     }
 
-    public void saveAll() {
-        if (!registerEntities.isEmpty()) {
-            correlationService.save(correlation.getCorrelationEntity());
-            registerRepository.saveAll(registerEntities);
+    @Async
+    @Transactional
+    public void saveAllRegisters(ListIterator<RegisterEntity> registers, CorrelationEntity correlation) {
+        if (registers != null) {
+
+            entityManager.persist(correlation);
+            entityManager.setFlushMode(FlushModeType.COMMIT);
+
+            int i = 0;
+            while (registers.hasNext()) {
+                entityManager.persist(registers.next());
+
+                if (i % 50 == 0) {
+                    entityManager.flush();
+                    entityManager.clear();
+                }
+                i++;
+            }
+
+            entityManager.flush();
+            entityManager.clear();
         }
     }
 

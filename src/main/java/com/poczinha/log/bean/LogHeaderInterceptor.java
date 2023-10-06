@@ -1,5 +1,6 @@
 package com.poczinha.log.bean;
 
+import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.poczinha.log.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @Configuration
 public class LogHeaderInterceptor implements WebMvcConfigurer {
@@ -21,6 +23,9 @@ public class LogHeaderInterceptor implements WebMvcConfigurer {
 
     @Autowired
     private RegisterService registerService;
+
+    @Autowired
+    private List<RegisterEntity> registerEntities;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -35,7 +40,7 @@ public class LogHeaderInterceptor implements WebMvcConfigurer {
 
             @Override
             public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-                registerService.saveAll();
+                registerService.saveAllRegisters(registerEntities.listIterator(), correlation.getCorrelationEntity());
             }
         });
     }

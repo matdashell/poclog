@@ -14,7 +14,7 @@ public class RegisterEntity {
     @Column(name = "new_value", columnDefinition = "varchar(255)")
     private String newValue;
 
-    @Column(name = "type", columnDefinition = "char(4)")
+    @Column(name = "type", columnDefinition = "char(20)")
     private String type;
 
     @ManyToOne(cascade = {CascadeType.MERGE})

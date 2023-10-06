@@ -5,11 +5,13 @@ import com.poczinha.log.service.ColumnService;
 import com.poczinha.log.service.CorrelationService;
 import com.poczinha.log.service.RegisterService;
 import org.springframework.context.annotation.*;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@EnableAsync
 @Configuration
 @EnableAspectJAutoProxy
 public class LogConfiguration {

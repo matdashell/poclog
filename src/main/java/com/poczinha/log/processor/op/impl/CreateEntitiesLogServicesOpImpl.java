@@ -9,10 +9,9 @@ import com.poczinha.log.processor.op.CreateEntitiesLogServicesOp;
 import com.poczinha.log.processor.util.Util;
 import com.poczinha.log.service.RegisterService;
 import com.squareup.javapoet.*;
+import org.hibernate.Session;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.lang.model.element.Modifier;
 import javax.persistence.EntityManager;
@@ -20,6 +19,8 @@ import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.poczinha.log.processor.Context.RESOLVER_NAME;
+import static com.poczinha.log.processor.Context.SERVICE_NAME;
 import static com.poczinha.log.processor.util.Util.isNumericType;
 
 public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogServicesOp {
@@ -27,7 +28,7 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
     @Override
     public void execute() throws ClassNotFoundException {
         for (EntityMapping entity : Context.mappings) {
-            String className = entity.getEntityName() + "LogService";
+            String className = entity.getEntityName() + SERVICE_NAME;
 
             TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                     .addModifiers(Modifier.PUBLIC)
@@ -62,8 +63,9 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
 
     private void deleteProcessor(TypeSpec.Builder builder, EntityMapping entity) {
         MethodSpec.Builder method = buildMethodLogDelete(entity);
+        int size = entity.getFields().size();
 
-        method.addStatement("$T<$T> reg = new $T<>()", List.class, RegisterEntity.class, ArrayList.class);
+        method.addStatement("$T<$T> reg = new $T<>($L)", List.class, RegisterEntity.class, ArrayList.class, size);
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
@@ -76,38 +78,37 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
         builder.addMethod(method.build());
     }
 
-    private void createAndUpdateProcessor(TypeSpec.Builder builder, EntityMapping entity) throws ClassNotFoundException {
+    private void createAndUpdateProcessor(TypeSpec.Builder builder, EntityMapping entity) {
         MethodSpec.Builder method = buildMethodLogCreateUpdate(entity);
 
         FieldMapping id = entity.getId();
-        String projectionName = entity.getEntityName() + "Projection";
-        String packageProjection = Context.packageName + Context.PACKAGE_PROJECTION_ENTITIES;
+        int size = entity.getFields().size();
+        String projectionName = entity.getEntityName() + RESOLVER_NAME;
+        String packageProjection = Context.packageName + Context.PACKAGE_RESOLVER_ENTITIES;
         ClassName projectionClassName = ClassName.get(packageProjection, projectionName);
 
-        method.addStatement("$T<$T> reg = new $T<>()", List.class, RegisterEntity.class, ArrayList.class);
+        method.addStatement("$T<$T> reg = new $T<>($L)", List.class, RegisterEntity.class, ArrayList.class, size);
 
         method.addCode("\n");
-        method.beginControlFlow("if (currentEntity.$L != null)", id.getAccess());
-        method.addStatement("$T expression = $T.PROJECTION_EXPRESSION", String.class, projectionClassName);
-        method.addCode("$T dbEntity = em.createQuery(expression, $T.class)\n", projectionClassName, projectionClassName);
-        method.addCode(".setParameter($S, currentEntity.$L)\n", id.getFieldSimpleName(), id.getAccess());
-        method.addStatement(".getSingleResult()");
+        method.beginControlFlow("if (req.$L != null)", id.getAccess());
+        method.addStatement("$T session = em.unwrap($T.class)", Session.class, Session.class);
+        method.addStatement("$T dbe = new $T(($T) session, req)", projectionClassName, projectionClassName, SessionImplementor.class);
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
             String fieldAccess = field.getAccess();
 
             if (field.asType().getKind().isPrimitive()) {
-                method.beginControlFlow("if (currentEntity.$L != dbEntity.$L)", fieldAccess, fieldAccess);
+                method.beginControlFlow("if (req.$L != dbe.$L)", fieldAccess, fieldAccess);
 
             } else if (isNumericType(field.asType())) {
-                method.beginControlFlow("if ($T.nuNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, fieldAccess, fieldAccess);
+                method.beginControlFlow("if ($T.nuNotEquals(dbe.$L, req.$L))", Util.class, fieldAccess, fieldAccess);
 
             } else {
-                method.beginControlFlow("if ($T.obNotEquals(dbEntity.$L, currentEntity.$L))", Util.class, fieldAccess, fieldAccess);
+                method.beginControlFlow("if ($T.obNotEquals(dbe.$L, req.$L))", Util.class, fieldAccess, fieldAccess);
             }
 
-            method.addStatement("reg.add(registerService.processUpdate($L, $T.valueOf(currentEntity.$L)))", field.getFieldSnakeCase(), Util.class, fieldAccess);
+            method.addStatement("reg.add(registerService.processUpdate($L, $T.valueOf(req.$L)))", field.getFieldSnakeCase(), Util.class, fieldAccess);
             method.endControlFlow();
         }
 
@@ -115,7 +116,7 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("reg.add(registerService.processCreate($L, $T.valueOf(currentEntity.$L)))", field.getFieldSnakeCase(), Util.class, field.getAccess());
+            method.addStatement("reg.add(registerService.processCreate($L, $T.valueOf(req.$L)))", field.getFieldSnakeCase(), Util.class, field.getAccess());
         }
 
         method.endControlFlow();
@@ -127,22 +128,15 @@ public class CreateEntitiesLogServicesOpImpl implements CreateEntitiesLogService
     }
 
     private static MethodSpec.Builder buildMethodLogCreateUpdate(EntityMapping entity) {
-        AnnotationSpec transactional = AnnotationSpec.builder(Transactional.class)
-                .addMember("propagation", "$T.$L", Propagation.class, "REQUIRES_NEW")
-                .addMember("isolation", "$T.$L", Isolation.class, "READ_COMMITTED")
-                .build();
-
         return MethodSpec.methodBuilder("processLogCreateUpdate")
                 .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(transactional)
                 .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class))
-                .addParameter(entity.getEntityTypeName(), "currentEntity");
+                .addParameter(entity.getEntityTypeName(), "req");
     }
 
     private static MethodSpec.Builder buildMethodLogDelete(EntityMapping entity) {
         return MethodSpec.methodBuilder("processLogDelete")
                 .addModifiers(Modifier.PUBLIC)
-                .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class))
-                .addParameter(TypeName.get(entity.getId().asType()), "entityId");
+                .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class));
     }
 }
