@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ColumnRepository extends JpaRepository<ColumnEntity, Integer> {
-    @Query("SELECT new ColumnEntity(c.id) FROM ColumnEntity c WHERE c.name = :name")
-    ColumnEntity findIdByName(@Param("name") String name);
+    @Query("SELECT new ColumnEntity(c.id, c.active) FROM ColumnEntity c WHERE c.table = :table AND c.field = :field")
+    ColumnEntity findIdByTableAndField(
+            @Param("table") String tableName,
+            @Param("field") String field);
 }

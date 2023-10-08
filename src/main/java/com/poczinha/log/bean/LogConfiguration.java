@@ -1,15 +1,12 @@
 package com.poczinha.log.bean;
 
-import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.poczinha.log.service.ColumnService;
 import com.poczinha.log.service.CorrelationService;
 import com.poczinha.log.service.RegisterService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @EnableAsync
 @Configuration
@@ -21,17 +18,8 @@ public class LogConfiguration {
             value = WebApplicationContext.SCOPE_REQUEST,
             proxyMode = ScopedProxyMode.TARGET_CLASS
     )
-    public Correlation correlation() {
-        return new Correlation("anonymous");
-    }
-
-    @Bean
-    @Scope(
-            value = WebApplicationContext.SCOPE_REQUEST,
-            proxyMode = ScopedProxyMode.TARGET_CLASS
-    )
-    public List<RegisterEntity> registerEntities() {
-        return new ArrayList<>();
+    public LogSessionRegisterManager registerManager() {
+        return new LogSessionRegisterManager();
     }
 
     @Bean
@@ -60,12 +48,17 @@ public class LogConfiguration {
     }
 
     @Bean
-    public RegisterManager registerManager() {
-        return new RegisterManager();
+    public LogColumnCache logColumnCache() {
+        return new LogColumnCache();
     }
 
     @Bean
-    public LogColumnCache logColumnCache() {
-        return new LogColumnCache();
+    public LogAuthVerifier authLogFields(LogSessionRegisterManager registerManager) {
+        return new LogAuthVerifier(role -> {
+            if (role != null && !role.isEmpty()) {
+                return registerManager.getAuthHeaders().contains(role);
+            }
+            return true;
+        });
     }
 }

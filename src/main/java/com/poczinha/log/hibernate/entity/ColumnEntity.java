@@ -8,23 +8,35 @@ import java.time.LocalDateTime;
 public class ColumnEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "int")
+    @Column(name = "id", columnDefinition = "bigint")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", columnDefinition = "varchar(60)")
-    private String name;
+    @Column(name = "table_name", columnDefinition = "varchar(60)", nullable = false)
+    private String table;
 
-    @Column(name = "included_at", columnDefinition = "datetime")
+    @Column(name = "field_name", columnDefinition = "varchar(60)", nullable = false)
+    private String field;
+
+    @Column(name = "included_at", columnDefinition = "datetime", nullable = false)
     private LocalDateTime includedAt;
 
-    public ColumnEntity(String name) {
-        this.name = name;
+    @Column(name = "active_log", columnDefinition = "boolean", nullable = false)
+    private boolean active;
+
+    @Column(name = "view_role", columnDefinition = "char(12)")
+    private String role;
+
+    public ColumnEntity(String tableName, String fieldName) {
+        this.field = fieldName;
+        this.active = true;
+        this.table = tableName;
         this.includedAt = LocalDateTime.now();
     }
 
-    public ColumnEntity(Integer id) {
+    public ColumnEntity(Integer id, Boolean active) {
         this.id = id;
+        this.active = active;
     }
 
     public ColumnEntity() {
@@ -38,12 +50,20 @@ public class ColumnEntity {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getTable() {
+        return table;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTable(String table) {
+        this.table = table;
+    }
+
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
     }
 
     public LocalDateTime getIncludedAt() {
@@ -52,5 +72,21 @@ public class ColumnEntity {
 
     public void setIncludedAt(LocalDateTime includedAt) {
         this.includedAt = includedAt;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

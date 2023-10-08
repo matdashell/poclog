@@ -1,6 +1,5 @@
 package com.poczinha.log.processor.mapping;
 
-import com.poczinha.log.annotation.LogField;
 import com.poczinha.log.processor.util.Util;
 import com.poczinha.log.processor.validate.ValidateUtil;
 import com.squareup.javapoet.TypeName;
@@ -19,15 +18,18 @@ public class EntityMapping {
     private final FieldMapping id;
     private final String repositoryPackage;
     private final Element entity;
+    private final String name;
     private final List<FieldMapping> fields;
 
-    public EntityMapping(Element entity, String repositoryPackage) {
+    public EntityMapping(Element entity, String repositoryPackage, String nammedTable) {
         Objects.requireNonNull(entity, "Entity must not be null");
         Objects.requireNonNull(repositoryPackage, "Repository package must not be null");
+        Objects.requireNonNull(nammedTable, "Nammed table must not be null");
 
-        this.repositoryPackage = repositoryPackage;
         this.entity = entity;
+        this.name = nammedTable;
         this.fields = new ArrayList<>();
+        this.repositoryPackage = repositoryPackage;
 
         FieldMapping idField = null;
         for (VariableElement element : ElementFilter.fieldsIn(entity.getEnclosedElements())) {
@@ -71,5 +73,9 @@ public class EntityMapping {
 
     public String getRepositoryPackage() {
         return repositoryPackage;
+    }
+
+    public String getName() {
+        return name;
     }
 }

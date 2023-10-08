@@ -68,7 +68,7 @@ public class Processor extends AbstractProcessor {
         Context.collectEntitiesOp.execute();
 
         log.debug("Executing projection entities creation");
-        Context.createProjectionEntitiesOp.execute();
+        Context.createResolverEntityOp.execute();
 
         log.debug("Executing aspect creation");
         Context.createAspectOp.execute();

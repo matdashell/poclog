@@ -14,22 +14,21 @@ public class RegisterEntity {
     @Column(name = "new_value", columnDefinition = "varchar(255)")
     private String newValue;
 
-    @Column(name = "type", columnDefinition = "char(20)")
+    @Column(name = "type", columnDefinition = "char(20)", nullable = false)
     private String type;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "correlation_id", referencedColumnName = "id", columnDefinition = "bigint")
+    @JoinColumn(name = "correlation_id", referencedColumnName = "id", columnDefinition = "bigint", nullable = false)
     private CorrelationEntity correlation;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "column_id", referencedColumnName = "id", columnDefinition = "int")
+    @JoinColumn(name = "column_id", referencedColumnName = "id", columnDefinition = "int", nullable = false)
     private ColumnEntity column;
 
     public RegisterEntity() {
     }
 
-    public RegisterEntity(CorrelationEntity correlation, ColumnEntity column, String newValue, String type) {
-        this.correlation = correlation;
+    public RegisterEntity(ColumnEntity column, String newValue, String type) {
         this.column = column;
         this.newValue = newValue;
         this.type = type;

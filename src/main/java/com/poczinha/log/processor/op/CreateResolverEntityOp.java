@@ -1,10 +1,9 @@
-package com.poczinha.log.processor.op.impl;
+package com.poczinha.log.processor.op;
 
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
 import com.poczinha.log.processor.mapping.FieldMapping;
-import com.poczinha.log.processor.op.CreateProjectionEntityOp;
 import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.*;
 import org.hibernate.engine.spi.EntityEntry;
@@ -15,9 +14,8 @@ import javax.lang.model.element.Modifier;
 
 import static com.poczinha.log.processor.Context.RESOLVER_NAME;
 
-public class CreateResolverEntityOpImpl implements CreateProjectionEntityOp {
+public class CreateResolverEntityOp {
 
-    @Override
     public void execute() {
         for (EntityMapping mapping : Context.mappings) {
             String className = mapping.getEntityName() + RESOLVER_NAME;

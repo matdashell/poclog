@@ -169,10 +169,14 @@ public class Util {
     }
 
     public static String toUpperSnakeCase(String input) {
-        input = Normalizer.normalize(input, Normalizer.Form.NFD);
-        input = input.replaceAll("[\\p{M}]", "");
+        input = normalizeStr(input);
         input = input.replace(" ", "_");
         return input.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase();
+    }
+
+    public static String normalizeStr(String input) {
+        input = Normalizer.normalize(input, Normalizer.Form.NFD);
+        return input.replaceAll("[\\p{M}]", "");
     }
 
     public static EntityEntry getEntityEntry(SessionImplementor session, Object entity) {

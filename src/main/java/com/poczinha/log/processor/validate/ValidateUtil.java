@@ -23,11 +23,12 @@ public class ValidateUtil {
     @SafeVarargs
     public static void containsAnnotation(Element element, Class<? extends Annotation>... classes) {
         for (Class<? extends Annotation> clazz : classes) {
-            if (element.getAnnotation(clazz) != null) return;
+            if (element.getAnnotation(clazz) == null) {
+                String msg = "Element ´" + element.getSimpleName() + "´ has no annotation " + clazz.getSimpleName();
+                log.error(msg);
+                throw new MappingException(msg);
+            }
         }
-        String msg = "Element ´" + element.getSimpleName() + "´ has no annotation " + Arrays.toString(classes);
-        log.error(msg);
-        throw new MappingException(msg);
     }
 
     public static void validField(VariableElement field, Element entity) {
@@ -38,20 +39,41 @@ public class ValidateUtil {
         }
     }
 
-    public static void containsUniquesFields() {
-        List<String> allFields = new ArrayList<>();
-        ArrayList<String> repeatedStrings = new ArrayList<>();
+    public static void containsUniquesEntities() {
+        List<String> entityNames = Context.mappings.stream()
+                .map(EntityMapping::getEntityName)
+                .collect(Collectors.toList());
 
+        ArrayList<String> repeatedStrings = countRepeattedEntities(entityNames);
+
+        if (!repeatedStrings.isEmpty()) {
+            String msg = "Entities " + repeatedStrings + " are repeated";
+            log.error(msg);
+            throw new MappingException(msg);
+        }
+    }
+
+    public static void containsUniquesFields() {
         for (EntityMapping mapping : Context.mappings) {
             List<String> fieldNames = mapping.getFields().stream()
-                    .map(FieldMapping::getName).collect(Collectors.toList());
+                    .map(FieldMapping::getName)
+                    .collect(Collectors.toList());
 
-            allFields.addAll(fieldNames);
+            ArrayList<String> repeatedStrings = countRepeattedEntities(fieldNames);
+
+            if (!repeatedStrings.isEmpty()) {
+                String msg = "Fields " + repeatedStrings + " are repeated in entity named " + mapping.getEntityName();
+                log.error(msg);
+                throw new MappingException(msg);
+            }
         }
+    }
 
+    private static ArrayList<String> countRepeattedEntities(List<String> fieldNames) {
+        ArrayList<String> repeatedStrings = new ArrayList<>();
         HashMap<String, Integer> counter = new HashMap<>();
 
-        for (String str : allFields) {
+        for (String str : fieldNames) {
             counter.put(str, counter.getOrDefault(str, 0) + 1);
         }
 
@@ -60,11 +82,6 @@ public class ValidateUtil {
                 repeatedStrings.add(key);
             }
         }
-
-        if (!repeatedStrings.isEmpty()) {
-            String msg = "Fields " + repeatedStrings + " are repeated in different entities";
-            log.error(msg);
-            throw new MappingException(msg);
-        }
+        return repeatedStrings;
     }
 }

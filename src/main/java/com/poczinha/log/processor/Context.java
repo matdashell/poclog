@@ -2,7 +2,6 @@ package com.poczinha.log.processor;
 
 import com.poczinha.log.processor.mapping.EntityMapping;
 import com.poczinha.log.processor.op.*;
-import com.poczinha.log.processor.op.impl.*;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
@@ -21,11 +20,11 @@ public class Context {
     public static final String SERVICE_NAME = "LogService";
     public static final String RESOLVER_NAME = "LogResolver";
 
-    public static CollectEntitiesOp collectEntitiesOp = new CollectEntitiesOpImpl();
-    public static CreateEntitiesLogServicesOp createEntitiesLogServicesOp = new CreateEntitiesLogServicesOpImpl();
-    public static CreateAspectOp createAspectOp = new CreateAspectOpImpl();
-    public static ConfigureOp configureOp = new ConfigureOpImpl();
-    public static CreateProjectionEntityOp createProjectionEntitiesOp = new CreateResolverEntityOpImpl();
+    public static CollectEntitiesOp collectEntitiesOp = new CollectEntitiesOp();
+    public static CreateEntitiesLogServicesOp createEntitiesLogServicesOp = new CreateEntitiesLogServicesOp();
+    public static CreateAspectOp createAspectOp = new CreateAspectOp();
+    public static ConfigureOp configureOp = new ConfigureOp();
+    public static CreateResolverEntityOp createResolverEntityOp = new CreateResolverEntityOp();
 
     public static Set<? extends Element> repositories;
     public static Set<EntityMapping> mappings = new HashSet<>();

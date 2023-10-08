@@ -1,7 +1,8 @@
 package com.poczinha.log.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.poczinha.log.domain.response.data.GroupTypeModifications;
+import com.poczinha.log.domain.response.data.GroupTypeModification;
+import com.poczinha.log.domain.response.data.TableModification;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class CorrelationModification {
     private final Long correlation;
     private final LocalDateTime date;
 
-    private final List<GroupTypeModifications> groups = new ArrayList<>();
+    private final List<TableModification> tableModifications = new ArrayList<>();
 
     public CorrelationModification(String identifier, Long correlation, LocalDateTime date) {
         this.identifier = identifier;
@@ -33,7 +34,7 @@ public class CorrelationModification {
         return date;
     }
 
-    public List<GroupTypeModifications> getEntities() {
-        return groups;
+    public List<TableModification> getTableModifications() {
+        return tableModifications;
     }
 }

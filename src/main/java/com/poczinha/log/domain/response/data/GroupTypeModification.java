@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonPropertyOrder({"type", "modifications"})
-public class GroupTypeModifications {
+public class GroupTypeModification {
     private final String type;
 
     private final List<FieldModification> modifications = new ArrayList<>();
 
-    public GroupTypeModifications(String type) {
+    public GroupTypeModification(String type) {
         this.type = type;
     }
 

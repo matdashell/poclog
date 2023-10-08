@@ -3,7 +3,8 @@ package com.poczinha.log.hibernate.repository;
 import com.poczinha.log.domain.response.CorrelationModification;
 import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.domain.response.data.FieldModification;
-import com.poczinha.log.domain.response.data.GroupTypeModifications;
+import com.poczinha.log.domain.response.data.GroupTypeModification;
+import com.poczinha.log.domain.response.data.TableModification;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> {
@@ -38,39 +40,55 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
             " )" +
             " FROM RegisterEntity r" +
             " WHERE r.correlation.id = :correlation")
-    CorrelationModification findAllCorrelationModification(@Param("correlation") Long correlation);
+    Optional<CorrelationModification> findAllCorrelationModification(@Param("correlation") Long correlation);
 
-    @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.GroupTypeModifications(" +
+    @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.GroupTypeModification(" +
                 " r.type" +
             " )" +
             " FROM RegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
+            " AND r.column.table = :table" +
             " ORDER BY r.type ASC")
-    List<GroupTypeModifications> findAllGroupTypesByCorrelation(@Param("correlation") Long correlation);
+    List<GroupTypeModification> findAllGroupTypesByCorrelationAndTable(
+            @Param("correlation") Long correlation,
+            @Param("table") String table);
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.FieldModification(" +
-                " r.column.name," +
-                " r.newValue" +
+                " r.column.field," +
+                " r.newValue," +
+                " r.column.role" +
             " )" +
             " FROM RegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
             " AND r.type = :type" +
-            " ORDER BY r.column.name ASC")
+            " AND r.column.table = :tableName" +
+            " AND r.column.active = 1" +
+            " ORDER BY r.column.field ASC")
     List<FieldModification> findAllFieldModifications(
             @Param("correlation") Long correlation,
+            @Param("tableName") String tableName,
             @Param("type") String type);
 
     @Query("SELECT r.newValue" +
             " FROM RegisterEntity r" +
             " WHERE r.type IN(:types)" +
-            " AND r.column.name = :columnName" +
-            " AND r.correlation.id < :id" +
+            " AND r.column.table = :tableName" +
+            " AND r.column.field = :columnName" +
+            " AND r.correlation.id < :correlation" +
             " AND r.newValue <> :newValue" +
             " ORDER BY r.correlation.id DESC")
-    Page<String> findLasNewValue(
+    Page<String> findFieldLastValueFromModification(
             @Param("columnName") String columnName,
-            @Param("id") Long id,
+            @Param("correlation") Long correlation,
+            @Param("tableName") String tableName,
             @Param("newValue") String newValue,
             @Param("types") List<String> types,
             Pageable pageRequest);
+
+    @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.TableModification(" +
+                " r.column.table" +
+            " ) FROM RegisterEntity r" +
+            " WHERE r.correlation.id = :correlation" +
+            " ORDER BY r.column.table ASC")
+    List<TableModification> findAllTablesByCorrelation(@Param("correlation") Long correlationId);
 }

@@ -12,10 +12,10 @@ public class CorrelationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "identifier", columnDefinition = "varchar(30)")
+    @Column(name = "identifier", columnDefinition = "varchar(30)", nullable = false)
     private String identifier;
 
-    @Column(name = "date", columnDefinition = "datetime")
+    @Column(name = "date", columnDefinition = "datetime", nullable = false)
     private LocalDateTime date;
 
     public CorrelationEntity() {

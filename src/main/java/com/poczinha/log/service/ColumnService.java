@@ -11,12 +11,16 @@ public class ColumnService {
     @Autowired
     private ColumnRepository columnRepository;
 
-    public ColumnEntity columnEntityWithName(String name) {
-        ColumnEntity byName = columnRepository.findIdByName(name);
-        if (byName == null) {
-            byName = new ColumnEntity(name);
-            return columnRepository.save(byName);
+    public ColumnEntity columnEntityWithName(String tableName, String fieldName) {
+        ColumnEntity columnEntity = columnRepository.findIdByTableAndField(tableName, fieldName);
+        if (columnEntity == null) {
+            columnEntity = new ColumnEntity(tableName, fieldName);
+            ColumnEntity save = columnRepository.save(columnEntity);
+            return new ColumnEntity(
+                    save.getId(),
+                    save.isActive()
+            );
         }
-        return byName;
+        return columnEntity;
     }
 }

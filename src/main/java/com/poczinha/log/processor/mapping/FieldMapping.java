@@ -25,7 +25,7 @@ public class FieldMapping {
         if (logEntity == null || Objects.equals(logEntity.name(), "")) {
             return this.field.getSimpleName().toString();
         } else {
-            return logEntity.name();
+            return Util.normalizeStr(logEntity.name());
         }
     }
 

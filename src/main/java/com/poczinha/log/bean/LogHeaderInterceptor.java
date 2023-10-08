@@ -1,6 +1,5 @@
 package com.poczinha.log.bean;
 
-import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.poczinha.log.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,36 +10,41 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 @Configuration
 public class LogHeaderInterceptor implements WebMvcConfigurer {
-    @Value("${audit.log.headerName:X-log-id}")
-    private String logHeaderName;
+    @Value("${audit.log.headerIdentifier:X-log-id}")
+    private String logHeaderIdentifier;
+
+    @Value("${audit.log.headerRole:X-log-role}")
+    private String logHeaderAuthorization;
 
     @Autowired
-    private Correlation correlation;
+    private LogSessionRegisterManager registerManager;
 
     @Autowired
     private RegisterService registerService;
-
-    @Autowired
-    private List<RegisterEntity> registerEntities;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-                if (request.getHeader(logHeaderName) != null) {
-                    correlation.setIdentifier(request.getHeader(logHeaderName));
+                if (request.getHeader(logHeaderIdentifier) != null) {
+                    registerManager.setIdentifier(request.getHeader(logHeaderIdentifier));
+                }
+                if (request.getHeader(logHeaderAuthorization) != null) {
+                    registerManager.setAuthHeaders(request.getHeader(logHeaderAuthorization));
                 }
                 return true;
             }
 
             @Override
             public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-                registerService.saveAllRegisters(registerEntities.listIterator(), correlation.getCorrelationEntity());
+                registerService.saveAllRegisters(
+                        registerManager.getRegisterEntities().listIterator(),
+                        registerManager.getCorrelationEntity()
+                );
             }
         });
     }
