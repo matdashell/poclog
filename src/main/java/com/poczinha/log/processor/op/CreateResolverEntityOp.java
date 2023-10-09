@@ -81,7 +81,7 @@ public class CreateResolverEntityOp {
         constructor.addCode("\n");
 
         constructor.nextControlFlow("else");
-        constructor.addStatement("throw new $T($S)", IllegalStateException.class, "Persistence context not found");
+        constructor.addStatement("throw new $T($S)", IllegalStateException.class, "Persistence context not found for entity " + mapping.getEntityName());
         constructor.endControlFlow();
 
         builder.addMethod(constructor.build());

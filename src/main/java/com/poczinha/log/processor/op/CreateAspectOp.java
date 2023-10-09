@@ -1,6 +1,5 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.bean.Correlation;
 import com.poczinha.log.bean.LogSessionRegisterManager;
 import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.poczinha.log.processor.Context;

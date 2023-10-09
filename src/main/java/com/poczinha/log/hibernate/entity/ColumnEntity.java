@@ -10,7 +10,7 @@ public class ColumnEntity {
     @Id
     @Column(name = "id", columnDefinition = "bigint")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "table_name", columnDefinition = "varchar(60)", nullable = false)
     private String table;
@@ -34,7 +34,7 @@ public class ColumnEntity {
         this.includedAt = LocalDateTime.now();
     }
 
-    public ColumnEntity(Integer id, Boolean active) {
+    public ColumnEntity(Long id, Boolean active) {
         this.id = id;
         this.active = active;
     }
@@ -42,11 +42,11 @@ public class ColumnEntity {
     public ColumnEntity() {
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

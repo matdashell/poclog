@@ -2,9 +2,11 @@ package com.poczinha.log.bean;
 
 import com.poczinha.log.domain.response.CorrelationModification;
 import com.poczinha.log.domain.response.PeriodModification;
+import com.poczinha.log.service.ColumnService;
 import com.poczinha.log.service.CorrelationService;
 import com.poczinha.log.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,9 @@ import java.util.List;
 public class LogController {
 
     @Autowired
+    private ColumnService columnService;
+
+    @Autowired
     private RegisterService registerService;
 
     @Autowired
@@ -27,8 +32,8 @@ public class LogController {
     public Page<PeriodModification> getAllPeriodModificationBetween(
             @PathVariable LocalDateTime start,
             @PathVariable LocalDateTime end,
-            @RequestParam int page,
-            @RequestParam int size) {
+            @RequestParam(required = false, value = "0") int page,
+            @RequestParam(required = false, value = "25") int size) {
 
         return registerService.getAllPeriodModificationBetween(start, end, page, size);
     }
@@ -45,8 +50,19 @@ public class LogController {
     @ResponseStatus(HttpStatus.OK)
     public Page<PeriodModification> getAllPeriodModificationByIdentifiers(
             @RequestParam List<String> values,
-            @RequestParam int page,
-            @RequestParam int size) {
+            @RequestParam(required = false, value = "0") int page,
+            @RequestParam(required = false, value = "25") int size) {
+
         return correlationService.findAllByIdentifier(values, page, size);
+    }
+
+    @PutMapping("/field/{fieldName}/table/{tableName}/set-role/{roleName}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void setFieldRole(
+            @PathVariable String fieldName,
+            @PathVariable String tableName,
+            @PathVariable String roleName) {
+
+            columnService.setFieldRole(fieldName, tableName, roleName);
     }
 }

@@ -18,6 +18,6 @@ public class LogColumnCache {
 
     public ColumnEntity retrieveOrStore(String tableName, String columnName) {
         CompositeFieldKey compositeFieldKey = new CompositeFieldKey(columnName, tableName);
-        return columnEntityMap.computeIfAbsent(compositeFieldKey, key -> columnService.columnEntityWithName(tableName, columnName));
+        return columnEntityMap.computeIfAbsent(compositeFieldKey, key -> columnService.retrieveOrStoreByTableAndColumn(tableName, columnName));
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ColumnRepository extends JpaRepository<ColumnEntity, Integer> {
+public interface ColumnRepository extends JpaRepository<ColumnEntity, Long> {
     @Query("SELECT new ColumnEntity(c.id, c.active) FROM ColumnEntity c WHERE c.table = :table AND c.field = :field")
     ColumnEntity findIdByTableAndField(
             @Param("table") String tableName,

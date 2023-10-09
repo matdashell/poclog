@@ -13,9 +13,11 @@ import com.poczinha.log.hibernate.repository.RegisterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
@@ -54,7 +56,7 @@ public class RegisterService {
     @Async
     @Transactional
     public void saveAllRegisters(ListIterator<RegisterEntity> registers, CorrelationEntity correlation) {
-        if (registers != null) {
+        if (registers != null && correlation != null) {
 
             entityManager.persist(correlation);
             entityManager.setFlushMode(FlushModeType.COMMIT);
@@ -81,7 +83,7 @@ public class RegisterService {
 
     public CorrelationModification getAllModificationsByCorrelation(Long correlationId) {
         CorrelationModification correlation = registerRepository.findAllCorrelationModification(correlationId)
-                .orElseThrow(() -> new RuntimeException("Correlation not found"));
+                .orElseThrow(() -> new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Correlation not found"));
 
         List<TableModification> tables = registerRepository.findAllTablesByCorrelation(correlationId);
         tables.forEach(table -> processTableModifications(correlationId, table));
@@ -100,7 +102,7 @@ public class RegisterService {
     private void processEntityModifications(Long correlation, String tableName, GroupTypeModification group) {
         List<FieldModification> modifications = registerRepository.findAllFieldModifications(correlation, tableName, group.getType())
                 .stream()
-                .filter(field -> logAuthVerifier.verify(field.getRole()))
+                .filter(field -> field.getRole() != null || logAuthVerifier.verify(field.getRole()))
                 .collect(Collectors.toList());
 
         if (!group.getType().startsWith(CREATE_TYPE)) {
@@ -114,15 +116,19 @@ public class RegisterService {
     private void updateFieldModificationsWithLastValue(List<FieldModification> modifications, String typeId, Long correlation, String tableName) {
         List<String> types = Arrays.asList(CREATE_TYPE + typeId, UPDATE_TYPE + typeId);
         modifications.forEach(modification -> {
-            String lastNewValue = registerRepository.findFieldLastValueFromModification(
-                    modification.getField(),
-                    correlation,
-                    tableName,
-                    modification.getNewValue(),
-                    types,
-                    PageRequest.of(0, 1)
-            ).getContent().get(0);
+            String lastNewValue = findLastValueForModification(correlation, tableName, modification, types);
             modification.setLastValue(lastNewValue);
         });
+    }
+
+    private String findLastValueForModification(Long correlation, String tableName, FieldModification modification, List<String> types) {
+        return registerRepository.findFieldLastValueFromModification(
+                modification.getField(),
+                correlation,
+                tableName,
+                modification.getNewValue(),
+                types,
+                PageRequest.of(0, 1)
+        ).getContent().get(0);
     }
 }

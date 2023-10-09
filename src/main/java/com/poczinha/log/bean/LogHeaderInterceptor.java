@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @Configuration
 public class LogHeaderInterceptor implements WebMvcConfigurer {
+
     @Value("${audit.log.headerIdentifier:X-log-id}")
     private String logHeaderIdentifier;
 

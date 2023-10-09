@@ -54,7 +54,7 @@ public class CreateEntitiesLogServicesOp {
 
     private void generateClassFields(TypeSpec.Builder builder) {
         FieldSpec registerService = Util.buildFieldBean(RegisterService.class, "registerService");
-        FieldSpec entityManager = Util.buildFieldBean(EntityManager.class, "em");
+        FieldSpec entityManager = Util.buildFieldBean(EntityManager.class, "entityManager");
         FieldSpec logColumnCache = Util.buildFieldBean(LogColumnCache.class, "logColumnCache");
 
         builder.addField(registerService);
@@ -99,7 +99,7 @@ public class CreateEntitiesLogServicesOp {
 
         method.addCode("\n");
         method.beginControlFlow("if (request.$L != null)", id.getAccess());
-        method.addStatement("$T session = em.unwrap($T.class)", Session.class, Session.class);
+        method.addStatement("$T session = entityManager.unwrap($T.class)", Session.class, Session.class);
         method.addStatement("$T dbEntity = new $T(($T) session, request)", projectionClassName, projectionClassName, SessionImplementor.class);
         method.addCode("\n");
 
