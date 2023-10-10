@@ -20,12 +20,12 @@ public class EntityMapping {
     private final Element repository;
     private final List<FieldMapping> fields;
 
-    public EntityMapping(Element entity, Element repositoryPackage) {
-        validateNonNullArgs(entity, repositoryPackage);
+    public EntityMapping(Element entity, Element entityRepository) {
+        validateNonNullArgs(entity, entityRepository);
 
         this.entity = entity;
         this.fields = new ArrayList<>();
-        this.repository = repositoryPackage;
+        this.repository = entityRepository;
         this.name = Util.extractEntityName(entity);
 
         this.id = processFields();

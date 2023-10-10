@@ -20,12 +20,6 @@ public class Context {
     public static final String SERVICE_NAME = "LogService";
     public static final String RESOLVER_NAME = "LogResolver";
 
-    public static CollectEntitiesOp collectEntitiesOp = new CollectEntitiesOp();
-    public static CreateEntitiesLogServicesOp createEntitiesLogServicesOp = new CreateEntitiesLogServicesOp();
-    public static CreateAspectOp createAspectOp = new CreateAspectOp();
-    public static ConfigureOp configureOp = new ConfigureOp();
-    public static CreateResolverEntityOp createResolverEntityOp = new CreateResolverEntityOp();
-
     public static Set<? extends Element> entities;
     public static Set<? extends Element> repositories;
     public static Set<EntityMapping> mappings = new HashSet<>();

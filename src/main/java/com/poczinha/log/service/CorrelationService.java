@@ -20,7 +20,7 @@ import java.util.Set;
 public class CorrelationService {
 
     @Autowired
-    private EntityManager em;
+    private EntityManager entityManager;
 
     @Autowired
     private CorrelationRepository correlationRepository;
@@ -37,11 +37,11 @@ public class CorrelationService {
         Set<String> uniqueSet = new HashSet<>(values);
         List<String> uniqueList = new ArrayList<>(uniqueSet);
 
-        TypedQuery<PeriodModification> selectQuery = em.createQuery(
+        TypedQuery<PeriodModification> selectQuery = entityManager.createQuery(
                 createSelectQuery(uniqueList),
                 PeriodModification.class);
 
-        TypedQuery<Long> countQuery = em.createQuery(
+        TypedQuery<Long> countQuery = entityManager.createQuery(
                 createCountQuery(values),
                 Long.class);
 
@@ -59,7 +59,7 @@ public class CorrelationService {
 
     private String createCountQuery(List<String> values) {
         StringBuilder query = new StringBuilder();
-        query.append("SELECT count(c) ");
+        query.append("SELECT count(c)");
         createFooterQuery(query, values);
 
         return query.toString();
@@ -68,7 +68,7 @@ public class CorrelationService {
     private String createSelectQuery(List<String> values) {
         StringBuilder query = new StringBuilder();
         query.append("SELECT new com.poczinha.log.domain.response.PeriodModification(");
-        query.append("c.identifier, c.id, c.date) ");
+        query.append(" c.identifier, c.id, c.date)");
         createFooterQuery(query, values);
         query.append(" ORDER BY c.date DESC");
 
@@ -76,8 +76,8 @@ public class CorrelationService {
     }
 
     private void createFooterQuery(StringBuilder query, List<String> values) {
-        query.append("FROM LogCorrelationEntity c ");
-        query.append("WHERE ");
+        query.append(" FROM LogCorrelationEntity c");
+        query.append(" WHERE ");
 
         for (int count = 0; count < values.size(); count++) {
             query.append("LOWER(c.identifier) LIKE :param").append(count);

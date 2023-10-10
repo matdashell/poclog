@@ -3,6 +3,7 @@ package com.poczinha.log.processor;
 import com.google.auto.service.AutoService;
 import com.poczinha.log.annotation.EnableLog;
 import com.poczinha.log.annotation.LogEntity;
+import com.poczinha.log.processor.op.*;
 import com.poczinha.log.processor.util.PrefixLogger;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
@@ -67,21 +68,21 @@ public class Processor extends AbstractProcessor {
         Context.repositoriesBasePackages = findCommonBasePackage(Context.repositories);
     }
 
-    private void executeOperations() throws ClassNotFoundException {
+    private void executeOperations() {
         log.debug("Executing entities collection");
-        Context.collectEntitiesOp.execute();
+        new CollectEntitiesOp().execute();
 
-        log.debug("Executing projection entities creation");
-        Context.createResolverEntityOp.execute();
+        log.debug("Executing resolver entities creation");
+        new CreateResolverEntityOp().execute();
 
         log.debug("Executing aspect creation");
-        Context.createAspectOp.execute();
+        new CreateAspectOp().execute();
 
         log.debug("Executing entities log services creation");
-        Context.createEntitiesLogServicesOp.execute();
+        new CreateEntitiesLogServicesOp().execute();
 
         log.debug("Executing configuration creation");
-        Context.configureOp.execute();
+        new ConfigureOp().execute();
 
         log.info("Finished processing");
     }

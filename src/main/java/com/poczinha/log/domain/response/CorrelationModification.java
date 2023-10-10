@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonPropertyOrder({"identifier", "correlation", "date", "entities"})
+@JsonPropertyOrder({"identifier", "correlation", "date", "tableModifications"})
 public class CorrelationModification {
     private final String identifier;
     private final Long correlation;
