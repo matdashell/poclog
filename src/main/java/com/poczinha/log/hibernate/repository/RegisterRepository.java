@@ -24,7 +24,7 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
                 " r.correlation.identifier," +
                 " r.correlation.id," +
                 " r.correlation.date" +
-            " ) FROM RegisterEntity r" +
+            " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.date BETWEEN :start AND :end" +
             " ORDER BY r.correlation.date DESC")
     Page<PeriodModification> findAllByDateBetween(
@@ -36,13 +36,13 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
                 " r.correlation.identifier," +
                 " r.correlation.id," +
                 " r.correlation.date" +
-            " ) FROM RegisterEntity r" +
+            " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.id = :correlation")
     Optional<CorrelationModification> findAllCorrelationModification(@Param("correlation") Long correlation);
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.GroupTypeModification(" +
                 " r.type" +
-            " ) FROM RegisterEntity r" +
+            " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
             " AND r.column.table = :table" +
             " ORDER BY r.type ASC")
@@ -54,7 +54,7 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
                 " r.column.field," +
                 " r.newValue," +
                 " r.column.role" +
-            " ) FROM RegisterEntity r" +
+            " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
             " AND r.type = :type" +
             " AND r.column.table = :tableName" +
@@ -66,7 +66,7 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
             @Param("type") String type);
 
     @Query("SELECT r.newValue" +
-            " FROM RegisterEntity r" +
+            " FROM LogRegisterEntity r" +
             " WHERE r.type IN(:types)" +
             " AND r.column.table = :tableName" +
             " AND r.column.field = :columnName" +
@@ -83,7 +83,7 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.TableModification(" +
                 " r.column.table" +
-            " ) FROM RegisterEntity r" +
+            " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
             " ORDER BY r.column.table ASC")
     List<TableModification> findAllTablesByCorrelation(@Param("correlation") Long correlationId);
