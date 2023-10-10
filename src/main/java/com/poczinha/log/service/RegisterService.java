@@ -22,7 +22,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.stream.Collectors;
 
 import static com.poczinha.log.processor.util.Util.notContainsRole;

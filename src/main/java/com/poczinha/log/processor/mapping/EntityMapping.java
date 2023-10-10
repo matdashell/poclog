@@ -3,7 +3,6 @@ package com.poczinha.log.processor.mapping;
 import com.poczinha.log.processor.util.Util;
 import com.poczinha.log.processor.validate.ValidateUtil;
 import com.squareup.javapoet.TypeName;
-import org.springframework.data.mapping.MappingException;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;

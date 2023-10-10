@@ -1,7 +1,6 @@
 package com.poczinha.log.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.poczinha.log.domain.response.data.GroupTypeModification;
 import com.poczinha.log.domain.response.data.TableModification;
 
 import java.time.LocalDateTime;

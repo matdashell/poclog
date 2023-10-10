@@ -6,7 +6,6 @@ import com.poczinha.log.service.ColumnService;
 import com.poczinha.log.service.CorrelationService;
 import com.poczinha.log.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
