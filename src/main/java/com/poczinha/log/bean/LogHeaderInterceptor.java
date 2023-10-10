@@ -4,6 +4,7 @@ import com.poczinha.log.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -21,16 +22,16 @@ public class LogHeaderInterceptor implements WebMvcConfigurer {
     private String logHeaderAuthorization;
 
     @Autowired
-    private LogSessionRegisterManager registerManager;
+    private RegisterService registerService;
 
     @Autowired
-    private RegisterService registerService;
+    private LogSessionRegisterManager registerManager;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
-            public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+            public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
                 if (request.getHeader(logHeaderIdentifier) != null) {
                     registerManager.setIdentifier(request.getHeader(logHeaderIdentifier));
                 }
@@ -41,11 +42,13 @@ public class LogHeaderInterceptor implements WebMvcConfigurer {
             }
 
             @Override
-            public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-                registerService.saveAllRegisters(
-                        registerManager.getRegisterEntities().listIterator(),
-                        registerManager.getCorrelationEntity()
-                );
+            public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler, Exception ex) {
+                if (registerManager.canLog() && registerManager.containsRegisterEntities()) {
+                    registerService.saveAllRegisters(
+                            registerManager.getRegisterEntitiesIterator(),
+                            registerManager.getCorrelationEntity()
+                    );
+                }
             }
         });
     }

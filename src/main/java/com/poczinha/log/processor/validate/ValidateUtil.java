@@ -84,4 +84,10 @@ public class ValidateUtil {
         }
         return repeatedStrings;
     }
+
+    public static void validateSingleIdField(FieldMapping currentIdField, VariableElement element) {
+        if (currentIdField != null) {
+            throw new MappingException("Entity '" + element.getSimpleName() + "' has more than one id field");
+        }
+    }
 }

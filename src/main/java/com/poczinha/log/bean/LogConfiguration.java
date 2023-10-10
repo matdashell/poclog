@@ -55,10 +55,7 @@ public class LogConfiguration {
     @Bean
     public LogAuthVerifier authLogFields(LogSessionRegisterManager registerManager) {
         return new LogAuthVerifier(role -> {
-            if (role != null && !role.isEmpty()) {
-                return registerManager.getAuthHeaders().contains(role);
-            }
-            return true;
+            return registerManager.getAuthHeaders().contains(role);
         });
     }
 }

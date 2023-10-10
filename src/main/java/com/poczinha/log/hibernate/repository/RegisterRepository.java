@@ -5,7 +5,7 @@ import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.domain.response.data.FieldModification;
 import com.poczinha.log.domain.response.data.GroupTypeModification;
 import com.poczinha.log.domain.response.data.TableModification;
-import com.poczinha.log.hibernate.entity.RegisterEntity;
+import com.poczinha.log.hibernate.entity.LogRegisterEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,14 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> {
+public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Long> {
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.PeriodModification(" +
                 " r.correlation.identifier," +
                 " r.correlation.id," +
                 " r.correlation.date" +
-            " )" +
-            " FROM RegisterEntity r" +
+            " ) FROM RegisterEntity r" +
             " WHERE r.correlation.date BETWEEN :start AND :end" +
             " ORDER BY r.correlation.date DESC")
     Page<PeriodModification> findAllByDateBetween(
@@ -37,15 +36,13 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
                 " r.correlation.identifier," +
                 " r.correlation.id," +
                 " r.correlation.date" +
-            " )" +
-            " FROM RegisterEntity r" +
+            " ) FROM RegisterEntity r" +
             " WHERE r.correlation.id = :correlation")
     Optional<CorrelationModification> findAllCorrelationModification(@Param("correlation") Long correlation);
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.GroupTypeModification(" +
                 " r.type" +
-            " )" +
-            " FROM RegisterEntity r" +
+            " ) FROM RegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
             " AND r.column.table = :table" +
             " ORDER BY r.type ASC")
@@ -57,8 +54,7 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
                 " r.column.field," +
                 " r.newValue," +
                 " r.column.role" +
-            " )" +
-            " FROM RegisterEntity r" +
+            " ) FROM RegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
             " AND r.type = :type" +
             " AND r.column.table = :tableName" +
@@ -78,11 +74,11 @@ public interface RegisterRepository extends JpaRepository<RegisterEntity, Long> 
             " AND r.newValue <> :newValue" +
             " ORDER BY r.correlation.id DESC")
     Page<String> findFieldLastValueFromModification(
-            @Param("columnName") String columnName,
-            @Param("correlation") Long correlation,
-            @Param("tableName") String tableName,
-            @Param("newValue") String newValue,
             @Param("types") List<String> types,
+            @Param("tableName") String tableName,
+            @Param("correlation") Long correlation,
+            @Param("columnName") String columnName,
+            @Param("newValue") String newValue,
             Pageable pageRequest);
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.TableModification(" +

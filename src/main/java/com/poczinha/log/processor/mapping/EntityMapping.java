@@ -21,30 +21,36 @@ public class EntityMapping {
     private final String name;
     private final List<FieldMapping> fields;
 
-    public EntityMapping(Element entity, String repositoryPackage, String nammedTable) {
-        Objects.requireNonNull(entity, "Entity must not be null");
-        Objects.requireNonNull(repositoryPackage, "Repository package must not be null");
-        Objects.requireNonNull(nammedTable, "Nammed table must not be null");
+    public EntityMapping(Element entity, String repositoryPackage, String namedTable) {
+        validateNonNullArgs(entity, repositoryPackage, namedTable);
 
         this.entity = entity;
-        this.name = nammedTable;
+        this.name = namedTable;
         this.fields = new ArrayList<>();
         this.repositoryPackage = repositoryPackage;
 
+        this.id = processFields();
+    }
+
+    private void validateNonNullArgs(Element entity, String repositoryPackage, String namedTable) {
+        Objects.requireNonNull(entity, "Entity must not be null");
+        Objects.requireNonNull(repositoryPackage, "Repository package must not be null");
+        Objects.requireNonNull(namedTable, "Named table must not be null");
+    }
+
+    private FieldMapping processFields() {
         FieldMapping idField = null;
+
         for (VariableElement element : ElementFilter.fieldsIn(entity.getEnclosedElements())) {
             if (element.getAnnotation(Id.class) != null) {
-                if (this.getId() != null) {
-                    throw new MappingException("Entity ´" + element.getSimpleName() + "´ has more than one id field");
-                }
+                ValidateUtil.validateSingleIdField(idField, element);
                 idField = new FieldMapping(element);
-
             } else if (!Util.isIgnoreField(element)) {
                 ValidateUtil.validField(element, this.entity);
                 fields.add(new FieldMapping(element));
             }
         }
-        this.id = idField;
+        return idField;
     }
 
     public String getEntityName() {

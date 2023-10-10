@@ -1,14 +1,12 @@
 package com.poczinha.log.bean;
 
-import com.poczinha.log.hibernate.entity.CorrelationEntity;
-import com.poczinha.log.hibernate.entity.RegisterEntity;
+import com.poczinha.log.hibernate.entity.LogCorrelationEntity;
+import com.poczinha.log.hibernate.entity.LogRegisterEntity;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,17 +15,18 @@ public class LogSessionRegisterManager {
     @Value("${audit.log.ignoreOnEmptyHeader:true}")
     private boolean ignoreOnEmptyHeader;
 
-    private final List<String> authHeaders = new ArrayList<>();
-    private final List<RegisterEntity> registerEntities;
-    private final CorrelationEntity correlationEntity;
+    private final List<String> authHeaders;
+    private final List<LogRegisterEntity> registerEntities;
+    private final LogCorrelationEntity correlationEntity;
 
     public LogSessionRegisterManager() {
+        this.authHeaders = new ArrayList<>();
         this.registerEntities = new ArrayList<>();
-        this.correlationEntity = new CorrelationEntity();
+        this.correlationEntity = new LogCorrelationEntity();
         this.correlationEntity.setIdentifier("anonymous");
     }
 
-    public Object executeAndRegister(ProceedingJoinPoint jp, List<RegisterEntity> registerEntity, Object id) throws Throwable {
+    public Object executeAndRegister(ProceedingJoinPoint jp, List<LogRegisterEntity> registerEntity, Object id) throws Throwable {
         Object result = execute(jp);
         addRegisterEntities(registerEntity, id);
         return result;
@@ -42,10 +41,9 @@ public class LogSessionRegisterManager {
         }
     }
 
-    public void addRegisterEntities(List<RegisterEntity> registerEntity, Object id) {
+    public void addRegisterEntities(List<LogRegisterEntity> registerEntity, Object id) {
         this.registerEntities.addAll(registerEntity.stream().peek(entity -> {
-            String type = entity.getType();
-            entity.setType(type + id);
+            entity.setType(entity.getType() + id);
             entity.setCorrelation(correlationEntity);
         }).collect(Collectors.toList()));
     }
@@ -54,11 +52,11 @@ public class LogSessionRegisterManager {
         return !this.ignoreOnEmptyHeader || !correlationEntity.getIdentifier().equals("anonymous");
     }
 
-    public List<RegisterEntity> getRegisterEntities() {
+    public List<LogRegisterEntity> getRegisterEntities() {
         return registerEntities;
     }
 
-    public CorrelationEntity getCorrelationEntity() {
+    public LogCorrelationEntity getCorrelationEntity() {
         return correlationEntity;
     }
 
@@ -72,5 +70,13 @@ public class LogSessionRegisterManager {
 
     public void setAuthHeaders(String authHeadrs) {
         this.authHeaders.addAll(Arrays.asList(authHeadrs.split(";")));
+    }
+
+    public ListIterator<LogRegisterEntity> getRegisterEntitiesIterator() {
+        return registerEntities.listIterator();
+    }
+
+    public boolean containsRegisterEntities() {
+        return !registerEntities.isEmpty();
     }
 }

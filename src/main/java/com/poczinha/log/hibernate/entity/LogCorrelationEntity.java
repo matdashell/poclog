@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tb_log_correlation")
-public class CorrelationEntity {
+public class LogCorrelationEntity {
 
     @Id
     @Column(name = "id", columnDefinition = "bigint")
@@ -18,7 +18,7 @@ public class CorrelationEntity {
     @Column(name = "date", columnDefinition = "datetime", nullable = false)
     private LocalDateTime date;
 
-    public CorrelationEntity() {
+    public LogCorrelationEntity() {
         this.date = LocalDateTime.now();
     }
 

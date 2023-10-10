@@ -1,7 +1,7 @@
 package com.poczinha.log.processor.op;
 
 import com.poczinha.log.bean.LogSessionRegisterManager;
-import com.poczinha.log.hibernate.entity.RegisterEntity;
+import com.poczinha.log.hibernate.entity.LogRegisterEntity;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
@@ -67,7 +67,7 @@ public class CreateAspectOp {
                 .addParameter(ProceedingJoinPoint.class, "jp")
                 .beginControlFlow("if (logSessionRegisterManager.canLog())")
                     .addStatement("$T entity = ($T) jp.getArgs()[0]", entity.asType(), entity.asType())
-                    .addStatement("$T<$T> registers = $L.processLogCreateUpdate(entity)", List.class, RegisterEntity.class, serviceSimpleName)
+                    .addStatement("$T<$T> registers = $L.processLogCreateUpdate(entity)", List.class, LogRegisterEntity.class, serviceSimpleName)
                     .addStatement("$T result = logSessionRegisterManager.execute(jp)", Object.class)
                     .addStatement("logSessionRegisterManager.addRegisterEntities(registers, entity.$L)", entity.getId().getAccess())
                     .addStatement("return result")
@@ -99,7 +99,7 @@ public class CreateAspectOp {
                 .addParameter(ProceedingJoinPoint.class, "jp")
                     .beginControlFlow("if (logSessionRegisterManager.canLog())")
                     .addStatement("$T entityId = ($T) jp.getArgs()[0]", entity.getId().asType(), entity.getId().asType())
-                    .addStatement("$T<$T> registers = $L.processLogDelete()", List.class, RegisterEntity.class, serviceSimpleName)
+                    .addStatement("$T<$T> registers = $L.processLogDelete()", List.class, LogRegisterEntity.class, serviceSimpleName)
                     .addStatement("return logSessionRegisterManager.executeAndRegister(jp, registers, entityId)")
                 .nextControlFlow("else")
                     .addStatement("return jp.proceed()")

@@ -6,9 +6,9 @@ import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.domain.response.data.FieldModification;
 import com.poczinha.log.domain.response.data.GroupTypeModification;
 import com.poczinha.log.domain.response.data.TableModification;
-import com.poczinha.log.hibernate.entity.ColumnEntity;
-import com.poczinha.log.hibernate.entity.CorrelationEntity;
-import com.poczinha.log.hibernate.entity.RegisterEntity;
+import com.poczinha.log.hibernate.entity.LogColumnEntity;
+import com.poczinha.log.hibernate.entity.LogCorrelationEntity;
+import com.poczinha.log.hibernate.entity.LogRegisterEntity;
 import com.poczinha.log.hibernate.repository.RegisterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,11 +25,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.poczinha.log.processor.util.Util.notContainsRole;
+
 @Service
 public class RegisterService {
-
-    @Autowired
-    private RegisterRepository registerRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -37,26 +36,29 @@ public class RegisterService {
     @Autowired
     private LogAuthVerifier logAuthVerifier;
 
+    @Autowired
+    private RegisterRepository registerRepository;
+
     public static final String CREATE_TYPE = "C-";
     public static final String DELETE_TYPE = "D-";
     public static final String UPDATE_TYPE = "U-";
 
-    public RegisterEntity processCreate(ColumnEntity field, String newValue) {
-        return new RegisterEntity(field, newValue, CREATE_TYPE);
+    public LogRegisterEntity processCreate(LogColumnEntity field, String newValue) {
+        return new LogRegisterEntity(field, newValue, CREATE_TYPE);
     }
 
-    public RegisterEntity processDelete(ColumnEntity field) {
-        return new RegisterEntity(field, null, DELETE_TYPE);
+    public LogRegisterEntity processDelete(LogColumnEntity field) {
+        return new LogRegisterEntity(field, null, DELETE_TYPE);
     }
 
-    public RegisterEntity processUpdate(ColumnEntity field, String newValue) {
-        return new RegisterEntity(field, newValue, UPDATE_TYPE);
+    public LogRegisterEntity processUpdate(LogColumnEntity field, String newValue) {
+        return new LogRegisterEntity(field, newValue, UPDATE_TYPE);
     }
 
     @Async
     @Transactional
-    public void saveAllRegisters(ListIterator<RegisterEntity> registers, CorrelationEntity correlation) {
-        if (registers != null && correlation != null) {
+    public void saveAllRegisters(ListIterator<LogRegisterEntity> registers, LogCorrelationEntity correlation) {
+        if (registers != null && registers.hasNext()) {
 
             entityManager.persist(correlation);
             entityManager.setFlushMode(FlushModeType.COMMIT);
@@ -102,7 +104,7 @@ public class RegisterService {
     private void processEntityModifications(Long correlation, String tableName, GroupTypeModification group) {
         List<FieldModification> modifications = registerRepository.findAllFieldModifications(correlation, tableName, group.getType())
                 .stream()
-                .filter(field -> field.getRole() != null || logAuthVerifier.verify(field.getRole()))
+                .filter(field -> notContainsRole(field.getRole()) || logAuthVerifier.verify(field.getRole()))
                 .collect(Collectors.toList());
 
         if (!group.getType().startsWith(CREATE_TYPE)) {
@@ -123,12 +125,7 @@ public class RegisterService {
 
     private String findLastValueForModification(Long correlation, String tableName, FieldModification modification, List<String> types) {
         return registerRepository.findFieldLastValueFromModification(
-                modification.getField(),
-                correlation,
-                tableName,
-                modification.getNewValue(),
-                types,
-                PageRequest.of(0, 1)
+                types, tableName, correlation, modification.getField(), modification.getNewValue(), PageRequest.of(0, 1)
         ).getContent().get(0);
     }
 }

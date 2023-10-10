@@ -1,13 +1,12 @@
 package com.poczinha.log.service;
 
 import com.poczinha.log.domain.response.PeriodModification;
-import com.poczinha.log.hibernate.entity.CorrelationEntity;
+import com.poczinha.log.hibernate.entity.LogCorrelationEntity;
 import com.poczinha.log.hibernate.repository.CorrelationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -26,7 +25,7 @@ public class CorrelationService {
     @Autowired
     private CorrelationRepository correlationRepository;
 
-    public void save(CorrelationEntity correlation) {
+    public void save(LogCorrelationEntity correlation) {
         correlationRepository.save(correlation);
     }
 

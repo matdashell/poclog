@@ -1,21 +1,14 @@
 package com.poczinha.log.processor.util;
 
 import com.poczinha.log.annotation.LogField;
-import com.poczinha.log.hibernate.entity.CorrelationEntity;
-import com.poczinha.log.hibernate.entity.RegisterEntity;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.hibernate.Session;
 import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -26,7 +19,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.persistence.*;
 import java.lang.annotation.Annotation;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
 import java.util.List;
@@ -195,5 +187,9 @@ public class Util {
             }
         }
         throw new IllegalArgumentException("Property name not found: " + propertyName);
+    }
+
+    public static boolean notContainsRole(String role) {
+        return role == null || role.isEmpty();
     }
 }

@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "tb_log_register")
-public class RegisterEntity {
+public class LogRegisterEntity {
 
     @Id
     @Column(name = "id", columnDefinition = "bigint")
@@ -19,16 +19,16 @@ public class RegisterEntity {
 
     @ManyToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "correlation_id", referencedColumnName = "id", columnDefinition = "bigint", nullable = false)
-    private CorrelationEntity correlation;
+    private LogCorrelationEntity correlation;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "column_id", referencedColumnName = "id", columnDefinition = "int", nullable = false)
-    private ColumnEntity column;
+    @JoinColumn(name = "column_id", referencedColumnName = "id", columnDefinition = "bigint", nullable = false)
+    private LogColumnEntity column;
 
-    public RegisterEntity() {
+    public LogRegisterEntity() {
     }
 
-    public RegisterEntity(ColumnEntity column, String newValue, String type) {
+    public LogRegisterEntity(LogColumnEntity column, String newValue, String type) {
         this.column = column;
         this.newValue = newValue;
         this.type = type;
@@ -58,19 +58,19 @@ public class RegisterEntity {
         this.type = type;
     }
 
-    public CorrelationEntity getCorrelation() {
+    public LogCorrelationEntity getCorrelation() {
         return correlation;
     }
 
-    public void setCorrelation(CorrelationEntity correlation) {
+    public void setCorrelation(LogCorrelationEntity correlation) {
         this.correlation = correlation;
     }
 
-    public ColumnEntity getColumn() {
+    public LogColumnEntity getColumn() {
         return column;
     }
 
-    public void setColumn(ColumnEntity column) {
+    public void setColumn(LogColumnEntity column) {
         this.column = column;
     }
 }

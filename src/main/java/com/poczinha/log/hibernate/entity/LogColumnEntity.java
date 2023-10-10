@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tb_log_column")
-public class ColumnEntity {
+public class LogColumnEntity {
 
     @Id
     @Column(name = "id", columnDefinition = "bigint")
@@ -27,19 +27,19 @@ public class ColumnEntity {
     @Column(name = "view_role", columnDefinition = "char(12)")
     private String role;
 
-    public ColumnEntity(String tableName, String fieldName) {
+    public LogColumnEntity(String tableName, String fieldName) {
         this.field = fieldName;
         this.active = true;
         this.table = tableName;
         this.includedAt = LocalDateTime.now();
     }
 
-    public ColumnEntity(Long id, Boolean active) {
+    public LogColumnEntity(Long id, Boolean active) {
         this.id = id;
         this.active = active;
     }
 
-    public ColumnEntity() {
+    public LogColumnEntity() {
     }
 
     public Long getId() {

@@ -55,14 +55,4 @@ public class LogController {
 
         return correlationService.findAllByIdentifier(values, page, size);
     }
-
-    @PutMapping("/field/{fieldName}/table/{tableName}/set-role/{roleName}")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void setFieldRole(
-            @PathVariable String fieldName,
-            @PathVariable String tableName,
-            @PathVariable String roleName) {
-
-            columnService.setFieldRole(fieldName, tableName, roleName);
-    }
 }

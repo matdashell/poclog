@@ -1,8 +1,8 @@
 package com.poczinha.log.processor.op;
 
 import com.poczinha.log.bean.LogColumnCache;
-import com.poczinha.log.hibernate.entity.ColumnEntity;
-import com.poczinha.log.hibernate.entity.RegisterEntity;
+import com.poczinha.log.hibernate.entity.LogColumnEntity;
+import com.poczinha.log.hibernate.entity.LogRegisterEntity;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
 import com.poczinha.log.processor.mapping.EntityMapping;
@@ -66,8 +66,8 @@ public class CreateEntitiesLogServicesOp {
         MethodSpec.Builder method = buildMethodLogDelete(entity);
         int size = entity.getFields().size();
 
-        method.addStatement("$T columnEntity", ColumnEntity.class);
-        method.addStatement("$T<$T> registers = new $T<>($L)", List.class, RegisterEntity.class, ArrayList.class, size);
+        method.addStatement("$T columnEntity", LogColumnEntity.class);
+        method.addStatement("$T<$T> registers = new $T<>($L)", List.class, LogRegisterEntity.class, ArrayList.class, size);
         method.addStatement("$T tableName = $S", String.class, entity.getName());
         method.addCode("\n");
 
@@ -93,9 +93,9 @@ public class CreateEntitiesLogServicesOp {
         String packageProjection = Context.packageName + PACKAGE_RESOLVER_ENTITIES;
         ClassName projectionClassName = ClassName.get(packageProjection, projectionName);
 
-        method.addStatement("$T columnEntity", ColumnEntity.class);
+        method.addStatement("$T columnEntity", LogColumnEntity.class);
         method.addStatement("$T tableName = $S", String.class, entity.getName());
-        method.addStatement("$T<$T> registers = new $T<>($L)", List.class, RegisterEntity.class, ArrayList.class, size);
+        method.addStatement("$T<$T> registers = new $T<>($L)", List.class, LogRegisterEntity.class, ArrayList.class, size);
 
         method.addCode("\n");
         method.beginControlFlow("if (request.$L != null)", id.getAccess());
@@ -143,13 +143,13 @@ public class CreateEntitiesLogServicesOp {
     private static MethodSpec.Builder buildMethodLogCreateUpdate(EntityMapping entity) {
         return MethodSpec.methodBuilder("processLogCreateUpdate")
                 .addModifiers(Modifier.PUBLIC)
-                .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class))
+                .returns(ParameterizedTypeName.get(List.class, LogRegisterEntity.class))
                 .addParameter(entity.getEntityTypeName(), "request");
     }
 
     private static MethodSpec.Builder buildMethodLogDelete(EntityMapping entity) {
         return MethodSpec.methodBuilder("processLogDelete")
                 .addModifiers(Modifier.PUBLIC)
-                .returns(ParameterizedTypeName.get(List.class, RegisterEntity.class));
+                .returns(ParameterizedTypeName.get(List.class, LogRegisterEntity.class));
     }
 }
