@@ -14,27 +14,26 @@ import java.util.List;
 import java.util.Objects;
 
 public class EntityMapping {
-    private final FieldMapping id;
-    private final String repositoryPackage;
-    private final Element entity;
     private final String name;
+    private final Element entity;
+    private final FieldMapping id;
+    private final Element repository;
     private final List<FieldMapping> fields;
 
-    public EntityMapping(Element entity, String repositoryPackage, String namedTable) {
-        validateNonNullArgs(entity, repositoryPackage, namedTable);
+    public EntityMapping(Element entity, Element repositoryPackage) {
+        validateNonNullArgs(entity, repositoryPackage);
 
         this.entity = entity;
-        this.name = namedTable;
         this.fields = new ArrayList<>();
-        this.repositoryPackage = repositoryPackage;
+        this.repository = repositoryPackage;
+        this.name = Util.extractEntityName(entity);
 
         this.id = processFields();
     }
 
-    private void validateNonNullArgs(Element entity, String repositoryPackage, String namedTable) {
+    private void validateNonNullArgs(Element entity, Element repositoryPackage) {
         Objects.requireNonNull(entity, "Entity must not be null");
-        Objects.requireNonNull(repositoryPackage, "Repository package must not be null");
-        Objects.requireNonNull(namedTable, "Named table must not be null");
+        Objects.requireNonNull(repositoryPackage, "Repository must not be null");
     }
 
     private FieldMapping processFields() {
@@ -45,7 +44,6 @@ public class EntityMapping {
                 ValidateUtil.validateSingleIdField(idField, element);
                 idField = new FieldMapping(element);
             } else if (!Util.isIgnoreField(element)) {
-                ValidateUtil.validField(element, this.entity);
                 fields.add(new FieldMapping(element));
             }
         }
@@ -77,10 +75,14 @@ public class EntityMapping {
     }
 
     public String getRepositoryPackage() {
-        return repositoryPackage;
+        return Util.getPackageName(repository);
     }
 
     public String getName() {
         return name;
+    }
+
+    public Element getRepository() {
+        return repository;
     }
 }

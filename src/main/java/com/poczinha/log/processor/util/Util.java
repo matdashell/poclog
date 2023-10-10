@@ -1,5 +1,6 @@
 package com.poczinha.log.processor.util;
 
+import com.poczinha.log.annotation.LogEntity;
 import com.poczinha.log.annotation.LogField;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
@@ -194,5 +195,19 @@ public class Util {
 
     public static boolean notContainsRole(String role) {
         return role == null || role.isEmpty();
+    }
+
+    public static String extractEntityName(Element entity) {
+        LogEntity entityAnnotation = entity.getAnnotation(LogEntity.class);
+        boolean containsName = entityAnnotation != null && !entityAnnotation.name().isEmpty();
+        String name = containsName ? entityAnnotation.name() : entity.getSimpleName().toString();
+        return normalizeStr(name);
+    }
+
+    public static String extractColumnName(Element field) {
+        LogField fieldAnnotation = field.getAnnotation(LogField.class);
+        boolean containsName = fieldAnnotation != null && !fieldAnnotation.name().isEmpty();
+        String name = containsName ? fieldAnnotation.name() : field.getSimpleName().toString();
+        return normalizeStr(name);
     }
 }

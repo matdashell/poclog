@@ -100,7 +100,7 @@ public class RegisterService {
         List<GroupTypeModification> groupTypes = registerRepository.findAllGroupTypesByCorrelationAndTable(correlationId, table.getTableName());
         groupTypes.forEach(groupType -> processEntityModifications(correlationId, table.getTableName(), groupType));
 
-        table.getGroups().addAll(groupTypes);
+        table.getGroupsModifications().addAll(groupTypes);
     }
 
     private void processEntityModifications(Long correlation, String tableName, GroupTypeModification group) {

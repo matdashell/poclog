@@ -30,14 +30,6 @@ public class ValidateUtil {
         }
     }
 
-    public static void validField(VariableElement field, Element entity) {
-        try {
-            containsAnnotation(field, LogField.class);
-        } catch (MappingException e) {
-            throw new MappingException("Field ´" + field.getSimpleName() + "´ in class ´" + entity.getSimpleName() + "´ must be annotated with @LogField");
-        }
-    }
-
     public static void containsUniquesEntities() {
         List<String> entityNames = Context.mappings.stream()
                 .map(EntityMapping::getEntityName)

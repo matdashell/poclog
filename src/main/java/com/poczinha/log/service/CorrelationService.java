@@ -76,7 +76,7 @@ public class CorrelationService {
     }
 
     private void createFooterQuery(StringBuilder query, List<String> values) {
-        query.append("FROM CorrelationEntity c ");
+        query.append("FROM LogCorrelationEntity c ");
         query.append("WHERE ");
 
         for (int count = 0; count < values.size(); count++) {

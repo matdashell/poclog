@@ -1,6 +1,5 @@
 package com.poczinha.log.processor.op;
 
-import com.poczinha.log.annotation.LogPersistenceEntities;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.mapping.EntityMapping;
 import com.poczinha.log.processor.util.PrefixLogger;
@@ -20,13 +19,13 @@ public class CollectEntitiesOp {
     private final PrefixLogger log = new PrefixLogger(CollectEntitiesOp.class);
 
     public void execute() {
-        for (Element repository : Context.repositories) {
+        for (Element entity : Context.entities) {
             try {
-                EntityMapping mapping = processRepository(repository);
+                EntityMapping mapping = processEntity(entity);
                 Context.mappings.add(mapping);
                 log.debug("Mapping added: " + mapping.getEntityName());
             } catch (Exception e) {
-                log.error("Error processing repository {} - {}" + repository.getSimpleName(), e, e.getMessage());
+                log.error("Error processing entity {} - {}" + entity.getSimpleName(), e, e.getMessage());
                 throw e;
             }
         }
@@ -35,15 +34,20 @@ public class CollectEntitiesOp {
         ValidateUtil.containsUniquesFields();
     }
 
-    private EntityMapping processRepository(Element repository) {
-        Element entity = extractEntityOfRepository(repository);
+    private EntityMapping processEntity(Element entity) {
+        Element entityOfRepository;
 
-        ValidateUtil.containsAnnotation(entity, Entity.class);
-        ValidateUtil.containsAnnotation(repository, Repository.class);
+        for (Element repository : Context.repositories) {
+            entityOfRepository = extractEntityOfRepository(repository);
+            if (entityOfRepository.equals(entity)) {
+                ValidateUtil.containsAnnotation(entity, Entity.class);
+                ValidateUtil.containsAnnotation(repository, Repository.class);
 
-        String repositoryPackage = Util.getPackageName(repository);
-        String nammedTable = repository.getAnnotation(LogPersistenceEntities.class).value();
-        return new EntityMapping(entity, repositoryPackage, Util.normalizeStr(nammedTable));
+                return new EntityMapping(entity, repository);
+            }
+        }
+
+        throw new MappingException("Could not find repository for entity " + entity.getSimpleName());
     }
 
     private Element extractEntityOfRepository(Element repository) {

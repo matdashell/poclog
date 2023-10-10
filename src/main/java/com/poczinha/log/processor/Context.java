@@ -26,6 +26,7 @@ public class Context {
     public static ConfigureOp configureOp = new ConfigureOp();
     public static CreateResolverEntityOp createResolverEntityOp = new CreateResolverEntityOp();
 
+    public static Set<? extends Element> entities;
     public static Set<? extends Element> repositories;
     public static Set<EntityMapping> mappings = new HashSet<>();
     public static String packageName;

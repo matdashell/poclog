@@ -24,7 +24,7 @@ import static com.poczinha.log.processor.util.Util.isNumericType;
 
 public class CreateEntitiesLogServicesOp {
 
-    public void execute() throws ClassNotFoundException {
+    public void execute() {
         for (EntityMapping entity : Context.mappings) {
             String className = entity.getEntityName() + SERVICE_NAME;
 
@@ -49,6 +49,12 @@ public class CreateEntitiesLogServicesOp {
 
             builder.addField(staticField.build());
         }
+
+        FieldSpec.Builder tableName = FieldSpec.builder(String.class, "TABLE_NAME")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .initializer("$S", entity.getName());
+
+        builder.addField(tableName.build());
     }
 
     private void generateClassFields(TypeSpec.Builder builder) {
@@ -62,16 +68,15 @@ public class CreateEntitiesLogServicesOp {
     }
 
     private void deleteProcessor(TypeSpec.Builder builder, EntityMapping entity) {
-        MethodSpec.Builder method = buildMethodLogDelete(entity);
+        MethodSpec.Builder method = buildMethodLogDelete();
         int size = entity.getFields().size();
 
         method.addStatement("$T columnEntity", LogColumnEntity.class);
         method.addStatement("$T<$T> registers = new $T<>($L)", List.class, LogRegisterEntity.class, ArrayList.class, size);
-        method.addStatement("$T tableName = $S", String.class, entity.getName());
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("columnEntity = logColumnCache.retrieveOrStore(tableName, $L)", field.getFieldSnakeCase());
+            method.addStatement("columnEntity = logColumnCache.retrieveOrStore(TABLE_NAME, $L)", field.getFieldSnakeCase());
             method.beginControlFlow("if (columnEntity.isActive())");
             method.addStatement("registers.add(registerService.processDelete(columnEntity))");
             method.endControlFlow();
@@ -93,7 +98,6 @@ public class CreateEntitiesLogServicesOp {
         ClassName projectionClassName = ClassName.get(packageProjection, projectionName);
 
         method.addStatement("$T columnEntity", LogColumnEntity.class);
-        method.addStatement("$T tableName = $S", String.class, entity.getName());
         method.addStatement("$T<$T> registers = new $T<>($L)", List.class, LogRegisterEntity.class, ArrayList.class, size);
 
         method.addCode("\n");
@@ -105,7 +109,7 @@ public class CreateEntitiesLogServicesOp {
         for (FieldMapping field : entity.getFields()) {
             String fieldAccess = field.getAccess();
 
-            method.addStatement("columnEntity = logColumnCache.retrieveOrStore(tableName, $L)", field.getFieldSnakeCase());
+            method.addStatement("columnEntity = logColumnCache.retrieveOrStore(TABLE_NAME, $L)", field.getFieldSnakeCase());
 
             if (field.asType().getKind().isPrimitive()) {
                 method.beginControlFlow("if (columnEntity.isActive() && request.$L != dbEntity.$L)", fieldAccess, fieldAccess);
@@ -125,7 +129,7 @@ public class CreateEntitiesLogServicesOp {
         method.addCode("\n");
 
         for (FieldMapping field : entity.getFields()) {
-            method.addStatement("columnEntity = logColumnCache.retrieveOrStore(tableName, $L)", field.getFieldSnakeCase());
+            method.addStatement("columnEntity = logColumnCache.retrieveOrStore(TABLE_NAME, $L)", field.getFieldSnakeCase());
             method.beginControlFlow("if (columnEntity.isActive())");
             method.addStatement("registers.add(registerService.processCreate(columnEntity, $T.valueOf(request.$L)))", Util.class, field.getAccess());
             method.endControlFlow();
@@ -146,7 +150,7 @@ public class CreateEntitiesLogServicesOp {
                 .addParameter(entity.getEntityTypeName(), "request");
     }
 
-    private static MethodSpec.Builder buildMethodLogDelete(EntityMapping entity) {
+    private static MethodSpec.Builder buildMethodLogDelete() {
         return MethodSpec.methodBuilder("processLogDelete")
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(List.class, LogRegisterEntity.class));

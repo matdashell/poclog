@@ -1,6 +1,5 @@
 package com.poczinha.log.processor.mapping;
 
-import com.poczinha.log.annotation.LogField;
 import com.poczinha.log.processor.util.Util;
 
 import javax.lang.model.element.Element;
@@ -16,17 +15,8 @@ public class FieldMapping {
         Objects.requireNonNull(field, "Field must not be null");
 
         this.field = field;
-        this.name = determineName();
+        this.name = Util.extractColumnName(field);
         this.fieldSnakeCase = Util.toUpperSnakeCase(this.field.getSimpleName().toString());
-    }
-
-    private String determineName() {
-        LogField logEntity = this.field.getAnnotation(LogField.class);
-        if (logEntity == null || Objects.equals(logEntity.name(), "")) {
-            return this.field.getSimpleName().toString();
-        } else {
-            return Util.normalizeStr(logEntity.name());
-        }
     }
 
     public String getName() {

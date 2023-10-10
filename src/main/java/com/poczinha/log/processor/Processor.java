@@ -2,7 +2,7 @@ package com.poczinha.log.processor;
 
 import com.google.auto.service.AutoService;
 import com.poczinha.log.annotation.EnableLog;
-import com.poczinha.log.annotation.LogPersistenceEntities;
+import com.poczinha.log.annotation.LogEntity;
 import com.poczinha.log.processor.util.PrefixLogger;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
@@ -21,7 +21,10 @@ import java.util.Set;
 
 import static com.poczinha.log.processor.util.Util.findCommonBasePackage;
 
-@SupportedAnnotationTypes({"com.poczinha.log.annotation.*", "jakarta.persistence.Entity"})
+@SupportedAnnotationTypes({
+        "jakarta.persistence.Entity",
+        "com.poczinha.log.annotation.LogEntity",
+        "org.springframework.stereotype.Repository"})
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 @AutoService(javax.annotation.processing.Processor.class)
 public class Processor extends AbstractProcessor {
@@ -30,7 +33,7 @@ public class Processor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Set<? extends Element> elementsAnnotatedWithLog = roundEnv.getElementsAnnotatedWith(LogPersistenceEntities.class);
+        Set<? extends Element> elementsAnnotatedWithLog = roundEnv.getElementsAnnotatedWith(LogEntity.class);
         Set<? extends Element> elementsAnnotatedWithEnableLog = roundEnv.getElementsAnnotatedWith(EnableLog.class);
 
         if (elementsAnnotatedWithLog.isEmpty()) return true;
@@ -56,11 +59,12 @@ public class Processor extends AbstractProcessor {
 
     private void setupContext(Element main, Set<? extends Element> elementsAnnotatedWithLog, RoundEnvironment roundEnv) {
         Context.filer = processingEnv.getFiler();
-        Context.repositories = elementsAnnotatedWithLog;
+        Context.entities = elementsAnnotatedWithLog;
+        Context.repositories = roundEnv.getElementsAnnotatedWith(Repository.class);
         Context.packageName = processingEnv.getElementUtils().getPackageOf(main).getQualifiedName().toString();
 
         Context.entitiesBasePackages = findCommonBasePackage(roundEnv.getElementsAnnotatedWith(Entity.class));
-        Context.repositoriesBasePackages = findCommonBasePackage(roundEnv.getElementsAnnotatedWith(Repository.class));
+        Context.repositoriesBasePackages = findCommonBasePackage(Context.repositories);
     }
 
     private void executeOperations() throws ClassNotFoundException {

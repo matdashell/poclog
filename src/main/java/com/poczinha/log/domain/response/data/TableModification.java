@@ -5,28 +5,28 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonPropertyOrder({"tableName", "groups"})
+@JsonPropertyOrder({"entityName", "groupsModifications"})
 public class TableModification {
-    private String tableName;
-    private List<GroupTypeModification> groups = new ArrayList<>();
+    private String entityName;
+    private List<GroupTypeModification> groupsModifications = new ArrayList<>();
 
-    public TableModification(String tableName) {
-        this.tableName = tableName;
+    public TableModification(String entityName) {
+        this.entityName = entityName;
     }
 
     public String getTableName() {
-        return tableName;
+        return entityName;
     }
 
     public void setTableName(String tableName) {
-        this.tableName = tableName;
+        this.entityName = tableName;
     }
 
-    public List<GroupTypeModification> getGroups() {
-        return groups;
+    public List<GroupTypeModification> getGroupsModifications() {
+        return groupsModifications;
     }
 
-    public void setGroups(List<GroupTypeModification> groups) {
-        this.groups = groups;
+    public void setGroupsModifications(List<GroupTypeModification> groups) {
+        this.groupsModifications = groups;
     }
 }
