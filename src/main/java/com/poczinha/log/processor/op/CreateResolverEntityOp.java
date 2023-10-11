@@ -18,10 +18,12 @@ public class CreateResolverEntityOp {
 
     public void execute() {
         for (EntityMapping mapping : Context.mappings) {
-            String className = mapping.getEntityName() + RESOLVER_NAME;
+            String entityName = mapping.getEntityName();
+            String className = entityName + RESOLVER_NAME;
 
             TypeSpec.Builder builder = TypeSpec.classBuilder(className)
-                    .addModifiers(Modifier.PUBLIC);
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Util.getGeneratedAnnotation("Extract database context values for entity " + entityName));
 
             createFields(mapping, builder);
             createConstructor(mapping, builder);

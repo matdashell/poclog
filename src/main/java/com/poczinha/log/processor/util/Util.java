@@ -11,6 +11,7 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.processing.Generated;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -23,6 +24,7 @@ import javax.persistence.OneToOne;
 import java.lang.annotation.Annotation;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -223,5 +225,13 @@ public class Util {
         } while (!currentElement.getQualifiedName().toString().equals("java.lang.Object"));
 
         return fields;
+    }
+
+    public static AnnotationSpec getGeneratedAnnotation(String comments) {
+        return AnnotationSpec.builder(Generated.class)
+                .addMember("value", "$S", "audit.log.processor.Processor")
+                .addMember("date", "$S", LocalDateTime.now().toString())
+                .addMember("comments", "$S", comments)
+                .build();
     }
 }

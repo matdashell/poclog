@@ -26,11 +26,13 @@ public class CreateEntitiesLogServicesOp {
 
     public void execute() {
         for (EntityMapping entity : Context.mappings) {
-            String className = entity.getEntityName() + SERVICE_NAME;
+            String entityName = entity.getEntityName();
+            String className = entityName + SERVICE_NAME;
 
             TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                     .addModifiers(Modifier.PUBLIC)
-                    .addAnnotation(Service.class);
+                    .addAnnotation(Service.class)
+                    .addAnnotation(Util.getGeneratedAnnotation("Service to process entity modifications of " + entityName));
 
             generateClassFields(builder);
             generateStaticFields(builder, entity);

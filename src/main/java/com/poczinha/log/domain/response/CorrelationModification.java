@@ -21,12 +21,12 @@ public class CorrelationModification {
         this.date = date;
     }
 
-    public Long getCorrelation() {
-        return correlation;
-    }
-
     public String getIdentifier() {
         return identifier;
+    }
+
+    public Long getCorrelation() {
+        return correlation;
     }
 
     public LocalDateTime getDate() {

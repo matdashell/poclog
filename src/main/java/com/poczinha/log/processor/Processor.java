@@ -5,19 +5,18 @@ import com.poczinha.log.annotation.EnableLog;
 import com.poczinha.log.annotation.LogEntity;
 import com.poczinha.log.processor.op.*;
 import com.poczinha.log.processor.util.PrefixLogger;
+import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.persistence.Entity;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static com.poczinha.log.processor.util.Util.findCommonBasePackage;

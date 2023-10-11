@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.lang.model.element.Modifier;
 import java.util.List;
 
-import static com.poczinha.log.processor.Context.ASPECT_NAME;
-import static com.poczinha.log.processor.Context.SERVICE_NAME;
+import static com.poczinha.log.processor.Context.*;
 
 public class CreateAspectOp {
 
@@ -26,13 +25,15 @@ public class CreateAspectOp {
 
         for (EntityMapping entity : Context.mappings) {
 
-            ClassName service = ClassName.get(packageLogEntities, entity.getEntityName() + SERVICE_NAME);
+            String className = entity.getEntityName();
+            ClassName service = ClassName.get(packageLogEntities, className + SERVICE_NAME);
             String serviceSimpleName = entity.getEntitySimpleName() + SERVICE_NAME;
 
-            TypeSpec.Builder aspectJInterceptor = TypeSpec.classBuilder(entity.getEntityName() + ASPECT_NAME)
+            TypeSpec.Builder aspectJInterceptor = TypeSpec.classBuilder(className + ASPECT_NAME)
                     .addModifiers(Modifier.PUBLIC)
                     .addAnnotation(Aspect.class)
-                    .addAnnotation(Component.class);
+                    .addAnnotation(Component.class)
+                    .addAnnotation(Util.getGeneratedAnnotation("Listeners of repository for entity " + className));
 
             FieldSpec entityService = Util.buildFieldBean(service, serviceSimpleName);
 

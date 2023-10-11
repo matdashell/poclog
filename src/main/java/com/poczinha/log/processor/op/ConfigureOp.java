@@ -3,6 +3,7 @@ package com.poczinha.log.processor.op;
 import com.poczinha.log.domain.Constants;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
+import com.poczinha.log.processor.util.Util;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.TypeSpec;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -12,13 +13,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class ConfigureOp {
 
     public void execute() {
-        createConfiguration();
-    }
-
-    private void createConfiguration() {
-
         TypeSpec.Builder configuration = TypeSpec.classBuilder("LogBeanConfiguration")
-                .addAnnotation(Configuration.class);
+                .addAnnotation(Configuration.class)
+                .addAnnotation(Util.getGeneratedAnnotation("Glogals log configuration"));
 
         AnnotationSpec entityScan = buildAnnotationEntityScan();
         AnnotationSpec repositoryScan = buildAnnotationEnableJpaRepositories();

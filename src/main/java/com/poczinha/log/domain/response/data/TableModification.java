@@ -14,19 +14,19 @@ public class TableModification {
         this.entityName = entityName;
     }
 
-    public String getTableName() {
+    public String getEntityName() {
         return entityName;
     }
 
-    public void setTableName(String tableName) {
-        this.entityName = tableName;
+    public void setEntityName(String entityName) {
+        this.entityName = entityName;
     }
 
     public List<GroupTypeModification> getGroupsModifications() {
         return groupsModifications;
     }
 
-    public void setGroupsModifications(List<GroupTypeModification> groups) {
-        this.groupsModifications = groups;
+    public void setGroupsModifications(List<GroupTypeModification> groupsModifications) {
+        this.groupsModifications = groupsModifications;
     }
 }
