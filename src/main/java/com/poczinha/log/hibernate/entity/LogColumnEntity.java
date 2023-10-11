@@ -8,23 +8,26 @@ import java.time.LocalDateTime;
 public class LogColumnEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "bigint")
+    @Column(name = "CdLogCampo", columnDefinition = "bigint")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "table_name", columnDefinition = "varchar(60)", nullable = false)
+    @Column(name = "DsTabela", columnDefinition = "varchar(60)", nullable = false)
     private String table;
 
-    @Column(name = "field_name", columnDefinition = "varchar(60)", nullable = false)
+    @Column(name = "DsCampo", columnDefinition = "varchar(60)", nullable = false)
     private String field;
 
-    @Column(name = "included_at", columnDefinition = "datetime", nullable = false)
+    @Column(name = "DtInclusao", columnDefinition = "datetime", nullable = false)
     private LocalDateTime includedAt;
 
-    @Column(name = "active_log", columnDefinition = "boolean", nullable = false)
+    @Column(name = "DtAlteracao", columnDefinition = "datetime")
+    private LocalDateTime alterAt;
+
+    @Column(name = "FlAtivo", columnDefinition = "boolean", nullable = false)
     private boolean active;
 
-    @Column(name = "view_role", columnDefinition = "char(12)")
+    @Column(name = "DsPermissao", columnDefinition = "char(12)")
     private String role;
 
     public LogColumnEntity(String tableName, String fieldName) {
@@ -88,5 +91,13 @@ public class LogColumnEntity {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public LocalDateTime getAlterAt() {
+        return alterAt;
+    }
+
+    public void setAlterAt(LocalDateTime alteredAt) {
+        this.alterAt = alteredAt;
     }
 }

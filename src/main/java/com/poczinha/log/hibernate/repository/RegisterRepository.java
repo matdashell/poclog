@@ -26,6 +26,7 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
                 " r.correlation.date" +
             " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.date BETWEEN :start AND :end" +
+            " AND r.correlation.active = 1" +
             " ORDER BY r.correlation.date DESC")
     Page<PeriodModification> findAllByDateBetween(
             @Param("start") LocalDateTime start,
@@ -37,13 +38,15 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
                 " r.correlation.id," +
                 " r.correlation.date" +
             " ) FROM LogRegisterEntity r" +
-            " WHERE r.correlation.id = :correlation")
+            " WHERE r.correlation.id = :correlation" +
+            " AND r.correlation.active = 1")
     Optional<CorrelationModification> findAllCorrelationModification(@Param("correlation") Long correlation);
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.GroupTypeModification(" +
                 " r.type" +
             " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
+            " AND r.correlation.active = 1" +
             " AND r.column.table = :table" +
             " ORDER BY r.type ASC")
     List<GroupTypeModification> findAllGroupTypesByCorrelationAndTable(

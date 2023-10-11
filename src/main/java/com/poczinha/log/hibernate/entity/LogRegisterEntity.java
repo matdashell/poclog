@@ -7,22 +7,22 @@ import javax.persistence.*;
 public class LogRegisterEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "bigint")
+    @Column(name = "CdLogRegistro", columnDefinition = "bigint")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "new_value", columnDefinition = "varchar(255)")
+    @Column(name = "DsNovoValor", columnDefinition = "varchar(255)")
     private String newValue;
 
-    @Column(name = "type", columnDefinition = "char(20)", nullable = false)
+    @Column(name = "DsInfoAlteracao", columnDefinition = "char(20)", nullable = false)
     private String type;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "correlation_id", referencedColumnName = "id", columnDefinition = "bigint", nullable = false)
+    @JoinColumn(name = "CdLogCorrelacionador", referencedColumnName = "CdLogCorrelacionador", columnDefinition = "bigint", nullable = false)
     private LogCorrelationEntity correlation;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "column_id", referencedColumnName = "id", columnDefinition = "bigint", nullable = false)
+    @JoinColumn(name = "CdLogCampo", referencedColumnName = "CdLogCampo", columnDefinition = "bigint", nullable = false)
     private LogColumnEntity column;
 
     public LogRegisterEntity() {

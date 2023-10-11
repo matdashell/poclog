@@ -40,13 +40,14 @@ public class Processor extends AbstractProcessor {
         if (elementsAnnotatedWithLog.isEmpty()) return true;
 
         if (elementsAnnotatedWithEnableLog.isEmpty()) {
-            log.info("No @EnableLog annotation found on main class");
+            log.warn("No @EnableLog annotation found on main class");
             return true;
         }
 
         log.info("Processing @EnableLog annotation");
         Element main = elementsAnnotatedWithEnableLog.iterator().next();
         setupContext(main, elementsAnnotatedWithLog, roundEnv);
+        if (isDuplicatedProcessor()) return true;
 
         try {
             executeOperations();
@@ -56,6 +57,15 @@ public class Processor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+    private boolean isDuplicatedProcessor() {
+        try {
+            Class.forName(Context.packageName + Context.PACKAGE_CONFIGURATION + ".LogBeanConfiguration");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     private void setupContext(Element main, Set<? extends Element> elementsAnnotatedWithLog, RoundEnvironment roundEnv) {

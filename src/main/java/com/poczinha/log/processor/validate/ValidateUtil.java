@@ -1,6 +1,5 @@
 package com.poczinha.log.processor.validate;
 
-import com.poczinha.log.annotation.LogField;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.mapping.EntityMapping;
 import com.poczinha.log.processor.mapping.FieldMapping;
@@ -79,6 +78,15 @@ public class ValidateUtil {
     public static void validateSingleIdField(FieldMapping currentIdField, VariableElement element) {
         if (currentIdField != null) {
             throw new MappingException("Entity '" + element.getSimpleName() + "' has more than one id field");
+        }
+    }
+
+    public static void validateMapping(EntityMapping entityMapping) {
+        if (entityMapping.getId() == null) {
+            throw new MappingException("Entity '" + entityMapping.getEntitySimpleName() + "' has no field with annotation @Id");
+        }
+        if (entityMapping.getFields().isEmpty()) {
+            throw new MappingException("Entity '" + entityMapping.getEntitySimpleName() + "' has no mapping fields");
         }
     }
 }

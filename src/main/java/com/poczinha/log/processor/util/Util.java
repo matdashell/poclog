@@ -11,13 +11,11 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -25,6 +23,7 @@ import javax.persistence.OneToOne;
 import java.lang.annotation.Annotation;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -172,7 +171,7 @@ public class Util {
 
     public static String normalizeStr(String input) {
         input = Normalizer.normalize(input, Normalizer.Form.NFD);
-        return input.replaceAll("[\\p{M}]", "");
+        return input.replaceAll("\\p{M}", "");
     }
 
     public static EntityEntry getEntityEntry(SessionImplementor session, Object entity) {
@@ -209,5 +208,20 @@ public class Util {
         boolean containsName = fieldAnnotation != null && !fieldAnnotation.name().isEmpty();
         String name = containsName ? fieldAnnotation.name() : field.getSimpleName().toString();
         return normalizeStr(name);
+    }
+
+    public static List<VariableElement> extractAllFields(TypeElement currentElement) {
+        List<VariableElement> fields = new ArrayList<>();
+
+        do {
+
+            fields.addAll(ElementFilter.fieldsIn(currentElement.getEnclosedElements()));
+            TypeMirror superclass = currentElement.getSuperclass();
+            if (superclass.getKind() != TypeKind.DECLARED) break;
+            currentElement = (TypeElement) ((DeclaredType) superclass).asElement();
+
+        } while (!currentElement.getQualifiedName().toString().equals("java.lang.Object"));
+
+        return fields;
     }
 }

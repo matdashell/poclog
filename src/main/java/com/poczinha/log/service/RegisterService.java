@@ -13,6 +13,7 @@ import com.poczinha.log.hibernate.repository.RegisterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -119,15 +120,17 @@ public class RegisterService {
 
     private void updateFieldModificationsWithLastValue(List<FieldModification> modifications, String typeId, Long correlation, String tableName) {
         List<String> types = Arrays.asList(CREATE_TYPE + typeId, UPDATE_TYPE + typeId);
+        PageRequest page = PageRequest.of(0, 1);
         modifications.forEach(modification -> {
-            String lastNewValue = findLastValueForModification(correlation, tableName, modification, types);
+            String lastNewValue = findLastValueForModification(correlation, tableName, modification, types, page);
             modification.setLastValue(lastNewValue);
         });
     }
 
-    private String findLastValueForModification(Long correlation, String tableName, FieldModification modification, List<String> types) {
-        return registerRepository.findFieldLastValueFromModification(
-                types, tableName, correlation, modification.getField(), modification.getNewValue(), PageRequest.of(0, 1)
-        ).getContent().get(0);
+    private String findLastValueForModification(Long correlation, String tableName, FieldModification modification, List<String> types, Pageable page) {
+        Page<String> fieldValue = registerRepository.findFieldLastValueFromModification(
+                types, tableName, correlation, modification.getField(), modification.getNewValue(), page
+        );
+        return fieldValue.isEmpty() ? null : fieldValue.getContent().get(0);
     }
 }

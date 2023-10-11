@@ -8,18 +8,22 @@ import java.time.LocalDateTime;
 public class LogCorrelationEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "bigint")
+    @Column(name = "CdLogCorrelacionador", columnDefinition = "bigint")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "identifier", columnDefinition = "varchar(30)", nullable = false)
+    @Column(name = "DsIdentificador", columnDefinition = "varchar(30)", nullable = false)
     private String identifier;
 
-    @Column(name = "date", columnDefinition = "datetime", nullable = false)
+    @Column(name = "DtInclusao", columnDefinition = "datetime", nullable = false)
     private LocalDateTime date;
+
+    @Column(name = "FlAtivo", columnDefinition = "boolean", nullable = false)
+    private boolean active;
 
     public LogCorrelationEntity() {
         this.date = LocalDateTime.now();
+        this.active = true;
     }
 
     public Long getId() {
@@ -44,5 +48,13 @@ public class LogCorrelationEntity {
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

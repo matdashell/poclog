@@ -5,9 +5,9 @@ import com.poczinha.log.processor.validate.ValidateUtil;
 import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,7 @@ public class EntityMapping {
         this.name = Util.extractEntityName(entity);
 
         this.id = processFields();
+        ValidateUtil.validateMapping(this);
     }
 
     private void validateNonNullArgs(Element entity, Element repositoryPackage) {
@@ -39,7 +40,7 @@ public class EntityMapping {
     private FieldMapping processFields() {
         FieldMapping idField = null;
 
-        for (VariableElement element : ElementFilter.fieldsIn(entity.getEnclosedElements())) {
+        for (VariableElement element : Util.extractAllFields((TypeElement) entity)) {
             if (element.getAnnotation(Id.class) != null) {
                 ValidateUtil.validateSingleIdField(idField, element);
                 idField = new FieldMapping(element);

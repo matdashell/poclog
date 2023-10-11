@@ -1,5 +1,6 @@
 package com.poczinha.log.bean;
 
+import com.poczinha.log.LogHandlerController;
 import com.poczinha.log.domain.response.CorrelationModification;
 import com.poczinha.log.domain.response.PeriodModification;
 import com.poczinha.log.service.ColumnService;
@@ -17,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/log")
-public class LogController {
+public class LogController extends LogHandlerController {
 
     @Autowired
     private ColumnService columnService;
