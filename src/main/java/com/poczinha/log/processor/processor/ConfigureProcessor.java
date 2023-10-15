@@ -1,4 +1,4 @@
-package com.poczinha.log.processor.op;
+package com.poczinha.log.processor.processor;
 
 import com.poczinha.log.domain.Constants;
 import com.poczinha.log.processor.Context;
@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-public class ConfigureOp {
+public class ConfigureProcessor {
 
     public void execute() {
         TypeSpec.Builder configuration = TypeSpec.classBuilder("LogBeanConfiguration")

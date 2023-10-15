@@ -82,8 +82,4 @@ public class EntityMapping {
     public String getName() {
         return name;
     }
-
-    public Element getRepository() {
-        return repository;
-    }
 }

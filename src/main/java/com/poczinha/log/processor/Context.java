@@ -1,8 +1,6 @@
 package com.poczinha.log.processor;
 
 import com.poczinha.log.processor.mapping.EntityMapping;
-import com.poczinha.log.processor.op.*;
-import com.squareup.javapoet.AnnotationSpec;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;

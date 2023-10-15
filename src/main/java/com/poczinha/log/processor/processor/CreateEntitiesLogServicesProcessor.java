@@ -1,4 +1,4 @@
-package com.poczinha.log.processor.op;
+package com.poczinha.log.processor.processor;
 
 import com.poczinha.log.bean.LogColumnCache;
 import com.poczinha.log.hibernate.entity.LogColumnEntity;
@@ -22,7 +22,7 @@ import java.util.List;
 import static com.poczinha.log.processor.Context.*;
 import static com.poczinha.log.processor.util.Util.isNumericType;
 
-public class CreateEntitiesLogServicesOp {
+public class CreateEntitiesLogServicesProcessor {
 
     public void execute() {
         for (EntityMapping entity : Context.mappings) {
@@ -112,15 +112,16 @@ public class CreateEntitiesLogServicesOp {
             String fieldAccess = field.getAccess();
 
             method.addStatement("columnEntity = logColumnCache.retrieveOrStore(TABLE_NAME, $L)", field.getFieldSnakeCase());
+            String prefix = "if (columnEntity.isActive() && ";
 
-            if (field.asType().getKind().isPrimitive()) {
-                method.beginControlFlow("if (columnEntity.isActive() && request.$L != dbEntity.$L)", fieldAccess, fieldAccess);
+            if (isNumericType(field.asType())) {
+                method.beginControlFlow(prefix + "request.$L != dbEntity.$L)", fieldAccess, fieldAccess);
 
-            } else if (isNumericType(field.asType())) {
-                method.beginControlFlow("if (columnEntity.isActive() && $T.nuNotEquals(dbEntity.$L, request.$L))", Util.class, fieldAccess, fieldAccess);
+            } else if (field.asType().getKind().isPrimitive()) {
+                method.beginControlFlow(prefix + "$T.nuNotEquals(dbEntity.$L, request.$L))", Util.class, fieldAccess, fieldAccess);
 
             } else {
-                method.beginControlFlow("if (columnEntity.isActive() && $T.obNotEquals(dbEntity.$L, request.$L))", Util.class, fieldAccess, fieldAccess);
+                method.beginControlFlow(prefix + "$T.obNotEquals(dbEntity.$L, request.$L))", Util.class, fieldAccess, fieldAccess);
             }
 
             method.addStatement("registers.add(registerService.processUpdate(columnEntity, $T.valueOf(request.$L)))", Util.class, fieldAccess);

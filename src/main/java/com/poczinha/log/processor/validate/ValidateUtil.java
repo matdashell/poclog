@@ -3,7 +3,8 @@ package com.poczinha.log.processor.validate;
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.mapping.EntityMapping;
 import com.poczinha.log.processor.mapping.FieldMapping;
-import com.poczinha.log.processor.util.PrefixLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mapping.MappingException;
 
 import javax.lang.model.element.Element;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class ValidateUtil {
 
-    private static final PrefixLogger log = new PrefixLogger(ValidateUtil.class);
+    private static final Logger log = LoggerFactory.getLogger(ValidateUtil.class);
 
     @SafeVarargs
     public static void containsAnnotation(Element element, Class<? extends Annotation>... classes) {

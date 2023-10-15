@@ -1,4 +1,4 @@
-package com.poczinha.log.processor.op;
+package com.poczinha.log.processor.processor;
 
 import com.poczinha.log.bean.LogSessionRegisterManager;
 import com.poczinha.log.hibernate.entity.LogRegisterEntity;
@@ -15,9 +15,10 @@ import org.springframework.stereotype.Component;
 import javax.lang.model.element.Modifier;
 import java.util.List;
 
-import static com.poczinha.log.processor.Context.*;
+import static com.poczinha.log.processor.Context.ASPECT_NAME;
+import static com.poczinha.log.processor.Context.SERVICE_NAME;
 
-public class CreateAspectOp {
+public class CreateAspectProcessor {
 
     public void execute() {
         String packageLogEntities = Context.packageName + Context.PACKAGE_LOG_ENTITIES;

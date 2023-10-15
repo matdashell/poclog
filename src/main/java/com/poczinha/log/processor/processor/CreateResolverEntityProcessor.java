@@ -1,4 +1,4 @@
-package com.poczinha.log.processor.op;
+package com.poczinha.log.processor.processor;
 
 import com.poczinha.log.processor.Context;
 import com.poczinha.log.processor.Processor;
@@ -14,7 +14,7 @@ import javax.lang.model.element.Modifier;
 
 import static com.poczinha.log.processor.Context.RESOLVER_NAME;
 
-public class CreateResolverEntityOp {
+public class CreateResolverEntityProcessor {
 
     public void execute() {
         for (EntityMapping mapping : Context.mappings) {

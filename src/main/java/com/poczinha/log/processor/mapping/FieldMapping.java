@@ -37,7 +37,16 @@ public class FieldMapping {
 
     public String getAccess() {
         String simpleName = field.getSimpleName().toString();
-        return "get" + simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1) + "()";
+        String typeStr = asType().toString();
+
+        String prefix;
+        if ("boolean".equals(typeStr) || "java.lang.Boolean".equals(typeStr)) {
+            prefix = "is";
+        } else {
+            prefix = "get";
+        }
+
+        return prefix + simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1) + "()";
     }
 
     public String getNameAccess() {
