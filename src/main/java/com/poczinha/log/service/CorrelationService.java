@@ -57,7 +57,7 @@ public class CorrelationService {
         return new PageImpl<>(selectQuery.getResultList(), PageRequest.of(page, size), total);
     }
 
-    private String createCountQuery(List<String> values) {
+    protected String createCountQuery(List<String> values) {
         StringBuilder query = new StringBuilder();
         query.append("SELECT count(c)");
         createFooterQuery(query, values);
@@ -65,7 +65,7 @@ public class CorrelationService {
         return query.toString();
     }
 
-    private String createSelectQuery(List<String> values) {
+    protected String createSelectQuery(List<String> values) {
         StringBuilder query = new StringBuilder();
         query.append("SELECT new com.poczinha.log.domain.response.PeriodModification(");
         query.append(" c.identifier, c.id, c.date)");

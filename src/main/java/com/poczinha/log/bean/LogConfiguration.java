@@ -3,6 +3,7 @@ package com.poczinha.log.bean;
 import com.poczinha.log.service.ColumnService;
 import com.poczinha.log.service.CorrelationService;
 import com.poczinha.log.service.RegisterService;
+import com.poczinha.log.service.TableService;
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.context.WebApplicationContext;
@@ -19,6 +20,11 @@ public class LogConfiguration {
     )
     public LogSessionRegisterManager registerManager() {
         return new LogSessionRegisterManager();
+    }
+
+    @Bean
+    public TableService tableService() {
+        return new TableService();
     }
 
     @Bean
@@ -47,8 +53,8 @@ public class LogConfiguration {
     }
 
     @Bean
-    public LogColumnCache logColumnCache() {
-        return new LogColumnCache();
+    public LogColumnCache logColumnCache(ColumnService columnService) {
+        return new LogColumnCache(columnService);
     }
 
     @Bean

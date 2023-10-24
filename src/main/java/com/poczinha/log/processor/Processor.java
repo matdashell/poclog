@@ -56,7 +56,7 @@ public class Processor extends AbstractProcessor {
         return true;
     }
 
-    private boolean isDuplicatedProcessor() {
+    protected boolean isDuplicatedProcessor() {
         try {
             Class.forName(Context.packageName + Context.PACKAGE_CONFIGURATION + ".LogBeanConfiguration");
             return true;
@@ -65,7 +65,7 @@ public class Processor extends AbstractProcessor {
         }
     }
 
-    private void setupContext(Element main, Set<? extends Element> elementsAnnotatedWithLog, RoundEnvironment roundEnv) {
+    protected void setupContext(Element main, Set<? extends Element> elementsAnnotatedWithLog, RoundEnvironment roundEnv) {
         Context.filer = processingEnv.getFiler();
         Context.entities = elementsAnnotatedWithLog;
         Context.repositories = roundEnv.getElementsAnnotatedWith(Repository.class);

@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/log")
-public class LogController {
+public class LogController extends LogControllerHandler{
 
     @Autowired
     private ColumnService columnService;

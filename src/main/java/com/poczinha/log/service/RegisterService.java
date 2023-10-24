@@ -42,9 +42,9 @@ public class RegisterService {
     @Autowired
     private RegisterRepository registerRepository;
 
-    public static final String CREATE_TYPE = "C-";
-    public static final String DELETE_TYPE = "D-";
-    public static final String UPDATE_TYPE = "U-";
+    public static final String CREATE_TYPE = "C";
+    public static final String DELETE_TYPE = "D";
+    public static final String UPDATE_TYPE = "U";
 
     public LogRegisterEntity processCreate(LogColumnEntity field, String newValue) {
         return new LogRegisterEntity(field, newValue, CREATE_TYPE);
@@ -97,28 +97,28 @@ public class RegisterService {
         return correlation;
     }
 
-    private void processTableModifications(Long correlationId, TableModification table) {
+    protected void processTableModifications(Long correlationId, TableModification table) {
         List<GroupTypeModification> groupTypes = registerRepository.findAllGroupTypesByCorrelationAndTable(correlationId, table.getEntityName());
         groupTypes.forEach(groupType -> processEntityModifications(correlationId, table.getEntityName(), groupType));
 
         table.getGroupsModifications().addAll(groupTypes);
     }
 
-    private void processEntityModifications(Long correlation, String tableName, GroupTypeModification group) {
+    protected void processEntityModifications(Long correlation, String tableName, GroupTypeModification group) {
         List<FieldModification> modifications = registerRepository.findAllFieldModifications(correlation, tableName, group.getType())
                 .stream()
                 .filter(field -> notContainsRole(field.getRole()) || logAuthVerifier.verify(field.getRole()))
                 .collect(Collectors.toList());
 
         if (!group.getType().startsWith(CREATE_TYPE)) {
-            String typeId = group.getType().substring(2);
+            String typeId = group.getType().substring(1);
             updateFieldModificationsWithLastValue(modifications, typeId, correlation, tableName);
         }
 
         group.getModifications().addAll(modifications);
     }
 
-    private void updateFieldModificationsWithLastValue(List<FieldModification> modifications, String typeId, Long correlation, String tableName) {
+    protected void updateFieldModificationsWithLastValue(List<FieldModification> modifications, String typeId, Long correlation, String tableName) {
         List<String> types = Arrays.asList(CREATE_TYPE + typeId, UPDATE_TYPE + typeId);
         PageRequest page = PageRequest.of(0, 1);
         modifications.forEach(modification -> {
@@ -127,7 +127,7 @@ public class RegisterService {
         });
     }
 
-    private String findLastValueForModification(Long correlation, String tableName, FieldModification modification, List<String> types, Pageable page) {
+    protected String findLastValueForModification(Long correlation, String tableName, FieldModification modification, List<String> types, Pageable page) {
         Page<String> fieldValue = registerRepository.findFieldLastValueFromModification(
                 types, tableName, correlation, modification.getField(), modification.getNewValue(), page
         );

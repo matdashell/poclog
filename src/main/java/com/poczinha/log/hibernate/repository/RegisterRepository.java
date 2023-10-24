@@ -47,7 +47,7 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
             " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
             " AND r.correlation.active = 1" +
-            " AND r.column.table = :table" +
+            " AND r.column.table.tableName = :table" +
             " ORDER BY r.type ASC")
     List<GroupTypeModification> findAllGroupTypesByCorrelationAndTable(
             @Param("correlation") Long correlation,
@@ -60,7 +60,7 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
             " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
             " AND r.type = :type" +
-            " AND r.column.table = :tableName" +
+            " AND r.column.table.tableName = :tableName" +
             " AND r.column.active = 1" +
             " ORDER BY r.column.field ASC")
     List<FieldModification> findAllFieldModifications(
@@ -71,7 +71,7 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
     @Query("SELECT r.newValue" +
             " FROM LogRegisterEntity r" +
             " WHERE r.type IN(:types)" +
-            " AND r.column.table = :tableName" +
+            " AND r.column.table.tableName = :tableName" +
             " AND r.column.field = :columnName" +
             " AND r.correlation.id < :correlation" +
             " AND r.newValue <> :newValue" +
@@ -85,9 +85,9 @@ public interface RegisterRepository extends JpaRepository<LogRegisterEntity, Lon
             Pageable pageRequest);
 
     @Query("SELECT DISTINCT new com.poczinha.log.domain.response.data.TableModification(" +
-                " r.column.table" +
+                " r.column.table.tableName" +
             " ) FROM LogRegisterEntity r" +
             " WHERE r.correlation.id = :correlation" +
-            " ORDER BY r.column.table ASC")
+            " ORDER BY r.column.table.tableName ASC")
     List<TableModification> findAllTablesByCorrelation(@Param("correlation") Long correlationId);
 }

@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tb_log_correlation")
+@Table(name = "tb_historico_correlacionador")
 public class LogCorrelationEntity {
 
     @Id

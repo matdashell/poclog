@@ -115,10 +115,10 @@ public class CreateEntitiesLogServicesProcessor {
             String prefix = "if (columnEntity.isActive() && ";
 
             if (isNumericType(field.asType())) {
-                method.beginControlFlow(prefix + "request.$L != dbEntity.$L)", fieldAccess, fieldAccess);
+                method.beginControlFlow(prefix + "$T.nuNotEquals(dbEntity.$L, request.$L))", Util.class, fieldAccess, fieldAccess);
 
             } else if (field.asType().getKind().isPrimitive()) {
-                method.beginControlFlow(prefix + "$T.nuNotEquals(dbEntity.$L, request.$L))", Util.class, fieldAccess, fieldAccess);
+                method.beginControlFlow(prefix + "request.$L != dbEntity.$L)", fieldAccess, fieldAccess);
 
             } else {
                 method.beginControlFlow(prefix + "$T.obNotEquals(dbEntity.$L, request.$L))", Util.class, fieldAccess, fieldAccess);

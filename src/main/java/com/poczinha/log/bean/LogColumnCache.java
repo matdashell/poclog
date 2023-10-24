@@ -13,8 +13,11 @@ import java.util.Map;
 public class LogColumnCache {
     private final Map<CompositeFieldKey, LogColumnEntity> columnEntityMap = new HashMap<>();
 
-    @Autowired
-    private ColumnService columnService;
+    private final ColumnService columnService;
+
+    public LogColumnCache(ColumnService columnService) {
+        this.columnService = columnService;
+    }
 
     public LogColumnEntity retrieveOrStore(String tableName, String columnName) {
         CompositeFieldKey compositeFieldKey = new CompositeFieldKey(columnName, tableName);

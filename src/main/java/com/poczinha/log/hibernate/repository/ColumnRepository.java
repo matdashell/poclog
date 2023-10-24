@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ColumnRepository extends JpaRepository<LogColumnEntity, Long> {
-    @Query("SELECT new LogColumnEntity(c.id, c.active) FROM LogColumnEntity c WHERE c.table = :table AND c.field = :field")
+    @Query("SELECT new LogColumnEntity(c.id, c.active) FROM LogColumnEntity c WHERE c.table.tableName = :table AND c.field = :field")
     LogColumnEntity findIdByTableAndField(
             @Param("table") String tableName,
             @Param("field") String field);

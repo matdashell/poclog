@@ -87,9 +87,6 @@ public class Util {
     public static boolean isNumericType(TypeMirror typeMirror) {
         return typeMirror.getKind() == TypeKind.DOUBLE
                 || typeMirror.getKind() == TypeKind.FLOAT
-                || typeMirror.getKind() == TypeKind.INT
-                || typeMirror.getKind() == TypeKind.LONG
-                || typeMirror.getKind() == TypeKind.SHORT
                 || typeMirror.toString().equals("java.math.BigDecimal");
     }
 

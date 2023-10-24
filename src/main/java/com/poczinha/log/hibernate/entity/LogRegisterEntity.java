@@ -3,7 +3,7 @@ package com.poczinha.log.hibernate.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "tb_log_register")
+@Table(name = "tb_historico_registros")
 public class LogRegisterEntity {
 
     @Id

@@ -13,7 +13,6 @@ public class CompositeFieldKey {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CompositeFieldKey that = (CompositeFieldKey) o;
         return Objects.equals(tableName, that.tableName) && Objects.equals(columnName, that.columnName);

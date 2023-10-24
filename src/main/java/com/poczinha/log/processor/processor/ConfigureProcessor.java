@@ -15,7 +15,7 @@ public class ConfigureProcessor {
     public void execute() {
         TypeSpec.Builder configuration = TypeSpec.classBuilder("LogBeanConfiguration")
                 .addAnnotation(Configuration.class)
-                .addAnnotation(Util.getGeneratedAnnotation("Glogals log configuration"));
+                .addAnnotation(Util.getGeneratedAnnotation("Globals log configuration"));
 
         AnnotationSpec entityScan = buildAnnotationEntityScan();
         AnnotationSpec repositoryScan = buildAnnotationEnableJpaRepositories();
